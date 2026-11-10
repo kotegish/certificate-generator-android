@@ -261,7 +261,7 @@ public class MainActivity extends Activity {
     }
     private void checkForUpdatesAutomatically(){
         long last=getPreferences(MODE_PRIVATE).getLong("last_auto_update_check",0);
-        if(System.currentTimeMillis()-last<12L*60L*60L*1000L)return;
+        if(System.currentTimeMillis()-last<6L*60L*60L*1000L)return;
         getPreferences(MODE_PRIVATE).edit().putLong("last_auto_update_check",System.currentTimeMillis()).apply();
         checkForUpdates(null);
     }
