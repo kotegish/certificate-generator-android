@@ -535,125 +535,107 @@ public class MainActivity extends Activity {
         try(InputStream in=getContentResolver().openInputStream(uri)){return BitmapFactory.decodeStream(in);}
     }
     private void drawDesign(Canvas c,Paint p,Template t){
-        p.setColor(t.color);c.drawColor(t.color);p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(4);p.setColor(t.accent);c.drawRect(24,24,818,571,p);p.setStrokeWidth(1);c.drawRect(36,36,806,559,p);
-        p.setStyle(Paint.Style.FILL);p.setTextAlign(Paint.Align.CENTER);p.setColor(t.accent);p.setTextSize(30);c.drawText("✦",421,75,p);
-        p.setStrokeWidth(1.5f);p.setStyle(Paint.Style.STROKE);
-        if(t.style%4==0){
-            for(int side:new int[]{0,1}){float x=side==0?72:770;for(int k=0;k<5;k++){c.drawCircle(x,110+k*88,18,p);c.drawCircle(x,110+k*88,11,p);}}
-            c.drawOval(170,54,672,541,p);
-        }else if(t.style%4==1){
-            for(int x=90;x<=752;x+=44){c.drawCircle(x,58,7,p);c.drawCircle(x,537,7,p);}
-            for(int y=105;y<=490;y+=48){c.drawCircle(57,y,7,p);c.drawCircle(785,y,7,p);}
-            c.drawRoundRect(52,52,790,543,24,24,p);
-        }else if(t.style%4==2){
-            for(int k=0;k<12;k++){double a=k*Math.PI/6;float x=(float)(421+Math.cos(a)*290),y=(float)(297+Math.sin(a)*205);c.drawCircle(x,y,22,p);c.drawCircle(x,y,12,p);}
-            c.drawCircle(421,297,145,p);c.drawCircle(421,297,153,p);
-        }else{
-            for(int k=0;k<9;k++){float inset=48+k*8;c.drawRoundRect(inset,inset*.62f,842-inset,595-inset*.62f,18,18,p);}
-            for(int x=105;x<760;x+=55){c.drawLine(x,44,x+24,68,p);c.drawLine(x+24,68,x+48,44,p);}
-        }
-        if(t.style>=16&&t.style<=26){
-            p.setStyle(Paint.Style.STROKE);p.setColor(t.accent);p.setStrokeWidth(2.4f);
-            if(t.style==16){
-                Path wave=new Path();wave.moveTo(0,185);wave.cubicTo(190,270,285,135,460,210);wave.cubicTo(620,280,730,165,842,210);wave.lineTo(842,245);wave.cubicTo(700,205,630,315,450,245);wave.cubicTo(270,175,165,315,0,225);wave.close();
-                p.setStyle(Paint.Style.FILL);p.setColor(Color.rgb(28,77,164));c.drawPath(wave,p);
-                Path red=new Path();red.moveTo(0,220);red.cubicTo(180,305,300,190,460,245);red.cubicTo(650,310,740,205,842,245);red.lineTo(842,270);red.cubicTo(700,245,620,345,445,280);red.cubicTo(270,220,160,350,0,255);red.close();p.setColor(Color.rgb(194,38,48));c.drawPath(red,p);
-                p.setStyle(Paint.Style.STROKE);p.setColor(t.accent);p.setStrokeWidth(2);c.drawRect(35,35,807,560,p);
-                p.setStyle(Paint.Style.FILL);p.setTextSize(28);c.drawText("✦",421,82,p);
-            }else if(t.style==17){
-                p.setStrokeWidth(10);c.drawRoundRect(55,55,787,540,48,48,p);
-                p.setStrokeWidth(2);c.drawRoundRect(75,75,767,520,38,38,p);
-                p.setStrokeWidth(7);c.drawArc(-230,80,370,680,280,210,false,p);c.drawArc(470,-90,1070,510,100,210,false,p);
-                p.setStrokeWidth(1.5f);c.drawLine(180,112,662,112,p);c.drawLine(180,483,662,483,p);
-                p.setStyle(Paint.Style.FILL);p.setTextSize(25);c.drawText("✧",421,103,p);
-            }else if(t.style==18){
-                p.setStrokeWidth(7);c.drawRect(25,25,817,570,p);p.setStrokeWidth(2);c.drawRect(43,43,799,552,p);
-                for(int x:new int[]{65,777})for(int y:new int[]{65,530}){c.drawCircle(x,y,30,p);c.drawCircle(x,y,21,p);c.drawCircle(x,y,11,p);}
-                p.setStrokeWidth(5);c.drawOval(170,45,672,132,p);c.drawOval(170,463,672,550,p);
-                for(int k=0;k<9;k++){float x=90+k*82;c.drawCircle(x,48,5,p);c.drawCircle(x,547,5,p);}
-            }else if(t.style==19){
-                p.setStrokeWidth(3);c.drawRect(32,32,810,563,p);p.setStrokeWidth(1);c.drawRect(48,48,794,547,p);
-                p.setStrokeWidth(2);c.drawLine(120,85,722,85,p);c.drawLine(120,510,722,510,p);
-                p.setStyle(Paint.Style.FILL);p.setTextSize(30);c.drawText("✦",421,78,p);c.drawText("✦",421,535,p);
-            }else{
-                p.setStrokeWidth(2);c.drawRoundRect(42,42,800,553,28,28,p);c.drawRoundRect(54,54,788,541,22,22,p);
-                p.setStyle(Paint.Style.FILL);p.setTextSize(36);c.drawText("✧",421,104,p);
-                p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(1.6f);
-                for(int x:new int[]{110,732})for(int y:new int[]{110,485}){c.drawCircle(x,y,24,p);c.drawCircle(x,y,15,p);}
-                p.setStyle(Paint.Style.FILL);p.setTextSize(13);c.drawText("LASH  •  BEAUTY  •  MASTER",421,500,p);
-            }
-        }
-        if(t.style>=21&&t.style<=26){
-            p.setStyle(Paint.Style.STROKE);p.setColor(t.accent);p.setStrokeCap(Paint.Cap.ROUND);p.setStrokeWidth(2.4f);
-            Path flourish=new Path();
-            flourish.moveTo(65,295);flourish.cubicTo(28,250,55,205,100,190);flourish.cubicTo(145,174,165,215,135,238);flourish.cubicTo(111,257,87,232,105,218);
-            flourish.cubicTo(145,185,183,145,150,105);flourish.cubicTo(126,76,89,92,94,121);flourish.cubicTo(99,145,130,144,132,124);
-            flourish.cubicTo(145,90,184,82,208,108);flourish.cubicTo(245,150,193,190,171,220);flourish.cubicTo(142,258,166,294,202,278);
-            c.drawPath(flourish,p);
-            Matrix mirror=new Matrix();mirror.setScale(-1,1,421,0);Path right=new Path();flourish.transform(mirror,right);c.drawPath(right,p);
-            Path lower=new Path();lower.moveTo(70,300);lower.cubicTo(110,330,150,330,180,300);lower.cubicTo(215,270,250,280,270,300);
-            lower.cubicTo(310,340,360,340,421,300);lower.cubicTo(482,340,532,340,572,300);lower.cubicTo(592,280,627,270,662,300);lower.cubicTo(692,330,732,330,772,300);c.drawPath(lower,p);
-            p.setStrokeWidth(1.2f);c.drawOval(175,52,667,543,p);c.drawRoundRect(38,38,804,557,32,32,p);
-            for(int x:new int[]{55,787})for(int y:new int[]{55,540}){c.drawCircle(x,y,25,p);c.drawCircle(x,y,17,p);c.drawCircle(x,y,8,p);}
-            if(t.style==22||t.style==25){p.setStrokeWidth(3);c.drawOval(300,45,542,135,p);c.drawOval(300,460,542,550,p);p.setStrokeWidth(1.5f);c.drawCircle(421,90,28,p);c.drawCircle(421,505,28,p);}
-            if(t.style==23||t.style==26){p.setStrokeWidth(1.5f);for(int k=0;k<8;k++){double a=k*Math.PI/4;float x=(float)(421+Math.cos(a)*340),y=(float)(297+Math.sin(a)*225);c.drawCircle(x,y,13,p);c.drawCircle(x,y,6,p);}c.drawLine(235,88,607,88,p);c.drawLine(235,507,607,507,p);}
-        }
-        if(t.style>=12&&t.style<=15){
-            p.setStyle(Paint.Style.STROKE);p.setColor(t.accent);p.setStrokeWidth(2.2f);
-            if(t.style==12){
-                c.drawRoundRect(44,44,798,551,28,28,p);c.drawRoundRect(57,57,785,538,22,22,p);
-                for(int x:new int[]{68,774})for(int y:new int[]{68,527}){c.drawCircle(x,y,19,p);c.drawCircle(x,y,10,p);c.drawLine(x-15,y-15,x+15,y+15,p);c.drawLine(x-15,y+15,x+15,y-15,p);}
-                c.drawOval(180,48,662,112,p);c.drawOval(180,483,662,547,p);
-            }else if(t.style==13){
-                p.setStrokeWidth(5);c.drawArc(-110,185,950,430,0,180,false,p);c.drawArc(-110,165,950,410,180,180,false,p);
-                p.setStrokeWidth(1.5f);for(int x=95;x<760;x+=42){c.drawCircle(x,65,4,p);c.drawCircle(x,530,4,p);}
-            }else if(t.style==14){
-                p.setStrokeWidth(1.4f);c.drawRect(48,48,794,547,p);c.drawRect(58,58,784,537,p);
-                c.drawLine(220,94,622,94,p);c.drawLine(220,501,622,501,p);c.drawCircle(421,94,7,p);c.drawCircle(421,501,7,p);
-            }else{
-                p.setStrokeWidth(3);c.drawRect(35,35,807,560,p);c.drawRect(51,51,791,544,p);
-                for(int k=0;k<8;k++){float x=90+k*95;c.drawLine(x,38,x+28,66,p);c.drawLine(x+28,66,x+56,38,p);}
-                c.drawLine(90,525,752,525,p);
-            }
-        }
-
-        if(t.style>=27){
-            p.setStyle(Paint.Style.STROKE);p.setColor(t.accent);p.setStrokeCap(Paint.Cap.ROUND);
-            if(t.style==27){
-                p.setStrokeWidth(3);c.drawRect(30,30,812,565,p);p.setStrokeWidth(1.2f);c.drawRect(43,43,799,552,p);
-                for(int x:new int[]{58,784})for(int y:new int[]{58,537}){c.drawCircle(x,y,27,p);c.drawCircle(x,y,17,p);c.drawCircle(x,y,7,p);}
-                p.setStrokeWidth(2);c.drawLine(180,82,662,82,p);c.drawLine(180,513,662,513,p);
-            }else if(t.style==28){
-                p.setStrokeWidth(2.5f);c.drawRoundRect(42,42,800,553,34,34,p);
-                for(int x:new int[]{70,772})for(int y:new int[]{70,525}){Path q=new Path();q.moveTo(x,y+42);q.cubicTo(x-8,y+8,x-42,y+8,x-42,y);q.cubicTo(x-8,y-8,x-8,y-42,x,y-42);c.drawPath(q,p);c.drawCircle(x,y,9,p);}
-                p.setStrokeWidth(1.2f);c.drawOval(170,48,672,547,p);
-            }else if(t.style==29){
-                p.setStrokeWidth(2.5f);c.drawRoundRect(38,38,804,557,26,26,p);
-                for(int k=0;k<10;k++){float y=92+k*45;c.drawCircle(66,y,5,p);c.drawCircle(776,y,5,p);}
-                p.setStrokeWidth(1.3f);c.drawOval(95,55,747,540,p);p.setStrokeWidth(2);c.drawLine(150,88,692,88,p);c.drawLine(150,507,692,507,p);
-            }else if(t.style==30){
-                p.setStrokeWidth(7);c.drawLine(48,48,48,547,p);c.drawLine(794,48,794,547,p);
-                p.setStrokeWidth(1.5f);c.drawRect(64,48,778,547,p);
-                for(int k=0;k<8;k++){float x=115+k*88;c.drawLine(x,48,x+28,76,p);c.drawLine(x+28,76,x+56,48,p);}
-                c.drawLine(180,105,662,105,p);c.drawLine(180,490,662,490,p);
-            }else if(t.style==31){
-                p.setStrokeWidth(2);c.drawRoundRect(42,42,800,553,24,24,p);
-                for(int side:new int[]{0,1}){c.save();if(side==1)c.scale(-1,1,421,297);Path leaf=new Path();leaf.moveTo(95,300);leaf.cubicTo(135,260,130,205,90,170);leaf.cubicTo(45,205,48,260,95,300);leaf.moveTo(95,300);leaf.cubicTo(145,315,165,365,150,405);leaf.cubicTo(105,390,85,345,95,300);c.drawPath(leaf,p);c.restore();}
-                p.setStrokeWidth(1.2f);c.drawOval(190,55,652,540,p);
-            }else if(t.style==32){
-                p.setStrokeWidth(2);c.drawRoundRect(42,42,800,553,30,30,p);
-                for(int x:new int[]{85,757})for(int y:new int[]{85,510}){c.drawCircle(x,y,22,p);c.drawCircle(x,y,12,p);}
-                p.setStrokeWidth(1.3f);c.drawOval(130,52,712,543,p);c.drawLine(250,90,592,90,p);c.drawLine(250,505,592,505,p);
-            }else if(t.style==33){
-                p.setStrokeWidth(5);c.drawRect(35,35,807,560,p);p.setStrokeWidth(1.4f);c.drawRect(52,52,790,543,p);
-                for(int x:new int[]{75,767})for(int y:new int[]{75,520}){c.drawLine(x-22,y,x,y-22,p);c.drawLine(x,y-22,x+22,y,p);c.drawLine(x+22,y,x,y+22,p);c.drawLine(x,y+22,x-22,y,p);}
-                p.setStrokeWidth(2);c.drawLine(180,92,662,92,p);c.drawLine(180,503,662,503,p);
-            }else{
-                p.setStrokeWidth(1.5f);c.drawRoundRect(48,48,794,547,12,12,p);c.drawLine(105,82,737,82,p);c.drawLine(105,513,737,513,p);
-                for(int x:new int[]{105,737})for(int y:new int[]{82,513})c.drawCircle(x,y,5,p);
-            }
-        }
+        final int gold=t.accent;
+        c.drawColor(t.color);
         p.setStyle(Paint.Style.FILL);
+        p.setColor(t.color);
+        // Тонкая фактура бумаги: мягкая двойная рамка и внутренний кант.
+        p.setStyle(Paint.Style.STROKE);p.setColor(gold);p.setStrokeWidth(5f);
+        c.drawRect(22,22,820,573,p);
+        p.setStrokeWidth(1.7f);c.drawRect(34,34,808,561,p);
+        p.setStrokeWidth(.8f);c.drawRect(43,43,799,552,p);
+        drawBeadedBorder(c,p,gold);
+        int style=t.style;
+        if(style==33){ // Арт-деко: ступенчатая геометрия и веерные лучи
+            p.setStrokeWidth(3.2f);c.drawRect(70,70,772,525,p);c.drawRect(82,82,760,513,p);
+            for(int i=0;i<9;i++){float x=421-i*24; c.drawLine(x,84,421,178,p);c.drawLine(421,178,842-x,84,p);}
+            for(int i=0;i<7;i++){float y=470+i*13;c.drawLine(160,y,682,y,p);}
+            drawMedallion(c,p,421,112,48,gold);
+            drawDecoCorners(c,p,gold);
+        }else if(style==28||style==22){ // Герб и королевская печать
+            drawLaurel(c,p,421,295,270,195,gold,18);
+            drawMedallion(c,p,421,105,54,gold);
+            p.setStrokeWidth(5);c.drawOval(300,445,542,548,p);p.setStrokeWidth(1.6f);c.drawOval(311,456,531,537,p);
+            drawCornerFlourish(c,p,gold,68,68,1f);drawCornerFlourish(c,p,gold,774,68,-1f);
+            drawCornerFlourish(c,p,gold,68,527,1f);drawCornerFlourish(c,p,gold,774,527,-1f);
+        }else if(style==29||style==31){ // Ботанический / лавровый
+            drawLaurel(c,p,421,300,305,215,gold,22);
+            drawCornerFlourish(c,p,gold,55,55,1.05f);drawCornerFlourish(c,p,gold,787,55,-1.05f);
+            drawCornerFlourish(c,p,gold,55,540,1.05f);drawCornerFlourish(c,p,gold,787,540,-1.05f);
+            drawMedallion(c,p,421,92,34,gold);
+        }else if(style==30||style==17){ // Сапфир / атлас с драпировкой
+            p.setStyle(Paint.Style.FILL);
+            Path drape=new Path();drape.moveTo(35,35);drape.cubicTo(175,165,260,40,421,130);drape.cubicTo(580,40,670,165,807,35);drape.lineTo(807,112);drape.cubicTo(650,225,560,100,421,190);drape.cubicTo(275,100,180,225,35,112);drape.close();
+            p.setColor(Color.rgb(19,39,76));c.drawPath(drape,p);
+            p.setStyle(Paint.Style.STROKE);p.setColor(gold);p.setStrokeWidth(5);c.drawPath(drape,p);
+            drawMedallion(c,p,421,142,48,gold);
+            drawLaurel(c,p,421,430,220,100,gold,14);
+        }else if(style==27||style==34){ // Классическая архитектурная рамка
+            p.setStrokeWidth(7);c.drawLine(82,70,82,525,p);c.drawLine(760,70,760,525,p);
+            p.setStrokeWidth(2);c.drawLine(98,70,98,525,p);c.drawLine(744,70,744,525,p);
+            for(int y=115;y<500;y+=42){p.setStrokeWidth(2);c.drawLine(67,y,98,y,p);c.drawLine(744,y,775,y,p);}
+            drawMedallion(c,p,421,90,34,gold);
+            drawCornerFlourish(c,p,gold,65,65,.8f);drawCornerFlourish(c,p,gold,777,65,-.8f);
+            drawCornerFlourish(c,p,gold,65,530,.8f);drawCornerFlourish(c,p,gold,777,530,-.8f);
+        }else if(style==32||style==26){ // Розовое золото / романтика
+            drawFlower(c,p,92,105,40,gold);drawFlower(c,p,750,105,40,gold);
+            drawFlower(c,p,92,490,40,gold);drawFlower(c,p,750,490,40,gold);
+            drawCornerFlourish(c,p,gold,52,52,.9f);drawCornerFlourish(c,p,gold,790,52,-.9f);
+            drawCornerFlourish(c,p,gold,52,543,.9f);drawCornerFlourish(c,p,gold,790,543,-.9f);
+            drawMedallion(c,p,421,90,28,gold);
+        }else{ // Барокко: насыщенные зеркальные вензеля
+            drawCornerFlourish(c,p,gold,58,58,1.1f);drawCornerFlourish(c,p,gold,784,58,-1.1f);
+            drawCornerFlourish(c,p,gold,58,537,1.1f);drawCornerFlourish(c,p,gold,784,537,-1.1f);
+            Path center=new Path();center.moveTo(120,297);center.cubicTo(220,235,265,340,340,297);center.cubicTo(370,275,390,275,421,297);center.cubicTo(452,275,472,275,502,297);center.cubicTo(577,340,622,235,722,297);
+            p.setStrokeWidth(2.2f);c.drawPath(center,p);
+            drawMedallion(c,p,421,82,31,gold);drawMedallion(c,p,421,513,24,gold);
+            if(style==21||style==25||style==23){drawLaurel(c,p,421,300,260,170,gold,16);}
+        }
+        // Малые разделители и ювелирные точки на длинных сторонах.
+        p.setStyle(Paint.Style.STROKE);p.setColor(gold);p.setStrokeWidth(1.1f);
+        for(int x=145;x<=697;x+=46){c.drawCircle(x,47,3.4f,p);c.drawCircle(x,548,3.4f,p);}
+        p.setStyle(Paint.Style.FILL);p.setColor(gold);p.setTextAlign(Paint.Align.CENTER);
+        p.setTypeface(Typeface.create("serif",Typeface.BOLD));p.setTextSize(20);
+        if(style!=33)c.drawText("✦",421,64,p);
+        p.setStyle(Paint.Style.FILL);
+    }
+    private void drawBeadedBorder(Canvas c,Paint p,int color){
+        p.setStyle(Paint.Style.STROKE);p.setColor(color);p.setStrokeWidth(1f);
+        for(int x=60;x<=782;x+=18){c.drawCircle(x,27,2.1f,p);c.drawCircle(x,568,2.1f,p);}
+        for(int y=65;y<=530;y+=18){c.drawCircle(27,y,2.1f,p);c.drawCircle(815,y,2.1f,p);}
+    }
+    private void drawCornerFlourish(Canvas c,Paint p,int color,float x,float y,float mirror){
+        p.setStyle(Paint.Style.STROKE);p.setColor(color);p.setStrokeCap(Paint.Cap.ROUND);p.setStrokeWidth(2.6f);
+        c.save();c.translate(x,y);c.scale(mirror,1);
+        Path a=new Path();a.moveTo(0,100);a.cubicTo(-12,54,14,20,52,18);a.cubicTo(88,16,93,52,69,60);a.cubicTo(48,67,37,44,52,36);
+        a.cubicTo(90,18,112,48,95,82);a.cubicTo(80,111,45,113,35,92);a.cubicTo(27,72,45,63,56,76);
+        a.moveTo(0,100);a.cubicTo(30,135,70,135,95,105);a.cubicTo(120,76,146,78,165,98);
+        a.moveTo(18,18);a.cubicTo(42,-4,72,-3,91,15);a.cubicTo(106,30,128,28,143,12);
+        c.drawPath(a,p);c.drawCircle(0,100,7,p);c.drawCircle(95,82,5,p);c.restore();
+    }
+    private void drawMedallion(Canvas c,Paint p,float x,float y,float r,int color){
+        p.setStyle(Paint.Style.STROKE);p.setColor(color);p.setStrokeWidth(3);c.drawCircle(x,y,r,p);
+        p.setStrokeWidth(1.2f);c.drawCircle(x,y,r-7,p);c.drawCircle(x,y,r-12,p);
+        for(int i=0;i<12;i++){double a=i*Math.PI/6;float px=(float)(x+Math.cos(a)*(r+5)),py=(float)(y+Math.sin(a)*(r+5));c.drawCircle(px,py,3,p);}
+        p.setStyle(Paint.Style.FILL);p.setTextAlign(Paint.Align.CENTER);p.setTypeface(Typeface.create("serif",Typeface.BOLD));p.setTextSize(r*.85f);p.setColor(color);c.drawText("✦",x,y+r*.28f,p);
+    }
+    private void drawLaurel(Canvas c,Paint p,float cx,float cy,float rx,float ry,int color,int count){
+        p.setStyle(Paint.Style.STROKE);p.setColor(color);p.setStrokeWidth(2.2f);
+        for(int side=0;side<2;side++){
+            c.save();if(side==1)c.scale(-1,1,cx,cy);
+            Path stem=new Path();stem.moveTo(cx,cy+ry*.72f);stem.cubicTo(cx-rx*.35f,cy+ry*.25f,cx-rx*.65f,cy-ry*.35f,cx-rx,cy-ry*.72f);c.drawPath(stem,p);
+            for(int i=0;i<count;i++){float q=i/(float)Math.max(1,count-1);float lx=cx-rx*q,ly=cy+ry*.65f-ry*1.35f*q;Path leaf=new Path();leaf.moveTo(lx,ly);leaf.cubicTo(lx-rx*.10f,ly-ry*.18f,lx-rx*.22f,ly-ry*.17f,lx-rx*.24f,ly);leaf.cubicTo(lx-rx*.16f,ly+ry*.10f,lx-rx*.05f,ly+ry*.08f,lx,ly);c.drawPath(leaf,p);}
+            c.restore();
+        }
+    }
+    private void drawFlower(Canvas c,Paint p,float x,float y,float r,int color){
+        p.setStyle(Paint.Style.STROKE);p.setColor(color);p.setStrokeWidth(1.8f);
+        for(int i=0;i<8;i++){c.save();c.rotate(i*45,x,y);c.drawOval(x-r*.22f,y-r,x+r*.22f,y-r*.18f,p);c.restore();}
+        p.setStyle(Paint.Style.FILL);c.drawCircle(x,y,r*.16f,p);
+    }
+    private void drawDecoCorners(Canvas c,Paint p,int color){
+        p.setStyle(Paint.Style.STROKE);p.setColor(color);p.setStrokeWidth(3);
+        for(int x:new int[]{90,752})for(int y:new int[]{90,505}){c.drawRect(x-25,y-25,x+25,y+25,p);c.drawLine(x-25,y,x,y-25,p);c.drawLine(x,y-25,x+25,y,p);c.drawLine(x+25,y,x,y+25,p);c.drawLine(x,y+25,x-25,y,p);}
     }
     private void drawFit(Canvas c,String s,float x,float y,float width,Paint p,float size,float min){p.setTextSize(size);while(p.measureText(s)>width&&size>min){size--;p.setTextSize(size);}c.drawText(s,x,y,p);}
     private String safe(String s){return s.replaceAll("[\\\\/:*?\"<>|]","_").trim().replaceAll("\\s+","_");}
