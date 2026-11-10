@@ -43,31 +43,33 @@ public class MainActivity extends Activity {
         TemplateField(String k,String l,float px,float py,float sz){key=k;label=l;x=px;y=py;size=sz;}
     }
     static class Template {
-        String name,category; int color,accent,style; Uri uri;
+        String name,category; int color,accent,style; Uri uri; String assetName;
         ArrayList<TemplateField> fields=new ArrayList<>();
         Template(String n,String c,int col,int a,int st){name=n;category=c;color=col;accent=a;style=st;}
     }
 
-    @Override public void onCreate(Bundle b){
+    private void addArtworkTemplate(String name,String category,String asset){Template t=new Template(name,category,Color.rgb(35,29,22),Color.rgb(213,174,91),0);t.assetName=asset;templates.add(t);}\n\n    @Override public void onCreate(Bundle b){
         super.onCreate(b);
         getWindow().setStatusBarColor(Color.rgb(246,247,251));
         getWindow().setNavigationBarColor(Color.rgb(246,247,251));
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
-        // Только художественная коллекция: 14 авторских оформлений.
-        templates.add(new Template("Барокко · Золото","Дипломы",Color.rgb(250,244,226),Color.rgb(151,105,45),21));
-        templates.add(new Template("Королевская печать","Сертификаты",Color.rgb(246,239,219),Color.rgb(126,82,31),22));
-        templates.add(new Template("Флорентийская вязь","Дипломы",Color.rgb(239,246,237),Color.rgb(48,111,77),23));
-        templates.add(new Template("Лавровая симфония","Грамоты",Color.rgb(243,246,235),Color.rgb(99,119,62),24));
-        templates.add(new Template("Ажурное золото","Сертификаты",Color.rgb(251,246,235),Color.rgb(172,127,56),25));
-        templates.add(new Template("Пудровый шёлк","Сертификаты",Color.rgb(252,240,242),Color.rgb(174,112,131),26));
-        templates.add(new Template("Золотая классика","Дипломы",Color.rgb(250,247,239),Color.rgb(174,133,61),27));
-        templates.add(new Template("Винтажный герб","Грамоты",Color.rgb(248,243,231),Color.rgb(130,91,43),28));
-        templates.add(new Template("Изумрудный сад","Сертификаты",Color.rgb(237,245,239),Color.rgb(43,112,82),29));
-        templates.add(new Template("Сапфировый атлас","Дипломы",Color.rgb(239,244,251),Color.rgb(48,83,145),30));
-        templates.add(new Template("Лавровая награда","Грамоты",Color.rgb(245,247,237),Color.rgb(105,126,69),31));
-        templates.add(new Template("Розовое золото","Сертификаты",Color.rgb(252,243,241),Color.rgb(181,119,112),32));
-        templates.add(new Template("Арт-деко · Вечер","Дипломы",Color.rgb(30,37,53),Color.rgb(222,184,104),33));
-        templates.add(new Template("Перламутровый минимализм","Сертификаты",Color.rgb(250,250,248),Color.rgb(77,91,111),34));
+        // Премиальная коллекция: каждый макет — отдельный JPEG-фон из assets/templates.
+        addArtworkTemplate("Королевский рубин","Сертификаты","01_royal_ruby.jpg");
+        addArtworkTemplate("Королевский сапфир","Дипломы","02_royal_sapphire.jpg");
+        addArtworkTemplate("Императорский герб","Грамоты","03_imperial_eagle.jpg");
+        addArtworkTemplate("Розовый сад","Сертификаты","04_rose_garden.jpg");
+        addArtworkTemplate("Изумрудный венок","Дипломы","05_emerald_laurel.jpg");
+        addArtworkTemplate("Мраморные колонны","Дипломы","06_marble_columns.jpg");
+        addArtworkTemplate("Сапфировая награда","Грамоты","07_blue_laurel.jpg");
+        addArtworkTemplate("Чёрный арт-деко","Сертификаты","08_black_artdeco.jpg");
+        addArtworkTemplate("Пудровые цветы","Сертификаты","09_pink_floral.jpg");
+        addArtworkTemplate("Старинный свиток","Грамоты","10_vintage_scroll.jpg");
+        addArtworkTemplate("Изумрудная корона","Дипломы","11_green_crown.jpg");
+        addArtworkTemplate("Жемчужная классика","Сертификаты","12_ivory_pearl.jpg");
+        addArtworkTemplate("Фиолетовая флора","Сертификаты","13_violet_flourish.jpg");
+        addArtworkTemplate("Золотая классика","Дипломы","14_classic_gold.jpg");
+        addArtworkTemplate("Бордовый бархат","Грамоты","15_burgundy_velvet.jpg");
+        addArtworkTemplate("Синий медальон","Сертификаты","16_navy_medallion.jpg");
         restoreCustomTemplates();
         selected=templates.get(0);
         String savedTree=getPreferences(MODE_PRIVATE).getString("save_tree_uri",null);
@@ -146,14 +148,17 @@ public class MainActivity extends Activity {
         @Override protected void onDraw(Canvas canvas){
             super.onDraw(canvas);
             Bitmap original=null;float pageH=595f;
-            if(template.uri!=null){try{original=loadTemplate(template.uri);if(original!=null&&original.getWidth()>0)pageH=842f*original.getHeight()/original.getWidth();}catch(Exception ignored){}}
+            try{
+                if(template.uri!=null)original=loadTemplate(template.uri);
+                else if(template.assetName!=null)try(InputStream in=getAssets().open("templates/"+template.assetName)){original=BitmapFactory.decodeStream(in);}
+                if(original!=null&&original.getWidth()>0)pageH=842f*original.getHeight()/original.getWidth();
+            }catch(Exception ignored){}
             float scale=Math.min(getWidth()/842f,getHeight()/pageH);
             float dx=(getWidth()-842f*scale)/2f,dy=(getHeight()-pageH*scale)/2f;
             canvas.save();canvas.translate(dx,dy);canvas.scale(scale,scale);
-            if(template.uri!=null){
-                if(original!=null){canvas.drawBitmap(original,null,new RectF(0,0,842,pageH),paint);original.recycle();}
-                drawCustomFields(canvas,paint,template,"ИМЯ УЧАСТНИКА","Название мероприятия","12.12.2026","Организатор",1,842,pageH);
-            }else drawCertificate(canvas,paint,template,"ИМЯ УЧАСТНИКА","Название мероприятия","12.12.2026","Организатор",1,true);
+            if(original!=null){canvas.drawBitmap(original,null,new RectF(0,0,842,pageH),paint);original.recycle();}
+            if(template.uri!=null)drawCustomFields(canvas,paint,template,"ИМЯ УЧАСТНИКА","Название мероприятия","12.12.2026","Организатор",1,842,pageH);
+            else drawSampleText(canvas,paint,template,pageH);
             canvas.restore();
         }
     }
@@ -443,12 +448,13 @@ public class MainActivity extends Activity {
 
     private byte[] pdf(String person,String title,String d,String org,int num)throws Exception{
         Bitmap bg=null;int pageW=842,pageH=595;
-        if(selected.uri!=null){bg=loadTemplate(selected.uri);if(bg!=null&&bg.getWidth()>0&&bg.getHeight()>0)pageH=Math.max(1,Math.round(pageW*(float)bg.getHeight()/bg.getWidth()));}
+        if(selected.uri!=null)bg=loadTemplate(selected.uri);
+        else if(selected.assetName!=null)try(InputStream in=getAssets().open("templates/"+selected.assetName)){bg=BitmapFactory.decodeStream(in);}
+        if(bg!=null&&bg.getWidth()>0&&bg.getHeight()>0)pageH=Math.max(1,Math.round(pageW*(float)bg.getHeight()/bg.getWidth()));
         PdfDocument doc=new PdfDocument();PdfDocument.Page page=doc.startPage(new PdfDocument.PageInfo.Builder(pageW,pageH,1).create());Canvas c=page.getCanvas();Paint p=new Paint(3);
-        if(selected.uri!=null){
-            if(bg!=null){c.drawBitmap(bg,null,new Rect(0,0,pageW,pageH),p);bg.recycle();}else drawDesign(c,p,selected);
-            drawCustomFields(c,p,selected,person,title,d,org,num,pageW,pageH);
-        }else drawCertificate(c,p,selected,person,title,d,org,num,false);
+        if(bg!=null){c.drawBitmap(bg,null,new Rect(0,0,pageW,pageH),p);bg.recycle();}
+        if(selected.uri!=null)drawCustomFields(c,p,selected,person,title,d,org,num,pageW,pageH);
+        else drawArtworkText(c,p,selected,person,title,d,org,num,pageH);
         doc.finishPage(page);ByteArrayOutputStream out=new ByteArrayOutputStream();doc.writeTo(out);doc.close();return out.toByteArray();
     }
 
