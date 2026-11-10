@@ -36,8 +36,8 @@ public class MainActivity extends Activity {
     private int ink=Color.rgb(31,43,62), muted=Color.rgb(111,122,139), accent=Color.rgb(72,91,176);
 
     static class Template {
-        String name,category; int color,accent; Uri uri;
-        Template(String n,String c,int col,int a){name=n;category=c;color=col;accent=a;}
+        String name,category; int color,accent,style; Uri uri;
+        Template(String n,String c,int col,int a,int st){name=n;category=c;color=col;accent=a;style=st;}
     }
 
     @Override public void onCreate(Bundle b){
@@ -45,10 +45,18 @@ public class MainActivity extends Activity {
         getWindow().setStatusBarColor(Color.rgb(246,247,251));
         getWindow().setNavigationBarColor(Color.rgb(246,247,251));
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
-        templates.add(new Template("Золотая классика","Сертификаты",Color.rgb(250,246,235),Color.rgb(166,126,54)));
-        templates.add(new Template("Академический","Дипломы",Color.rgb(241,245,252),Color.rgb(43,77,133)));
-        templates.add(new Template("Современный","Сертификаты",Color.rgb(239,248,246),Color.rgb(40,125,111)));
-        templates.add(new Template("Минимализм","Грамоты",Color.rgb(248,247,245),Color.rgb(72,78,91)));
+        templates.add(new Template("Золотая классика","Сертификаты",Color.rgb(250,246,235),Color.rgb(166,126,54),0));
+        templates.add(new Template("Королевский орнамент","Дипломы",Color.rgb(247,240,222),Color.rgb(137,93,35),1));
+        templates.add(new Template("Изумрудная вязь","Сертификаты",Color.rgb(235,246,239),Color.rgb(35,112,83),2));
+        templates.add(new Template("Синий гильош","Дипломы",Color.rgb(235,241,251),Color.rgb(43,77,145),3));
+        templates.add(new Template("Лавровый венок","Грамоты",Color.rgb(244,246,235),Color.rgb(104,125,65),4));
+        templates.add(new Template("Розовое золото","Сертификаты",Color.rgb(250,239,237),Color.rgb(177,105,103),5));
+        templates.add(new Template("Арт-деко","Дипломы",Color.rgb(31,39,57),Color.rgb(218,177,94),6));
+        templates.add(new Template("Ночная звезда","Сертификаты",Color.rgb(31,39,66),Color.rgb(224,195,119),7));
+        templates.add(new Template("Пергамент","Грамоты",Color.rgb(246,235,211),Color.rgb(130,91,48),8));
+        templates.add(new Template("Сакура","Сертификаты",Color.rgb(252,239,244),Color.rgb(190,111,143),9));
+        templates.add(new Template("Геометрия","Дипломы",Color.rgb(239,242,247),Color.rgb(75,91,119),10));
+        templates.add(new Template("Праздничный узор","Грамоты",Color.rgb(250,243,229),Color.rgb(167,72,61),11));
         selected=templates.get(0);
         String savedTree=getPreferences(MODE_PRIVATE).getString("save_tree_uri",null);
         if(savedTree!=null)try{saveTree=Uri.parse(savedTree);}catch(Exception ignored){}
@@ -112,6 +120,7 @@ public class MainActivity extends Activity {
         wrap.setOnClickListener(v->{selected=t;updateSelected();showTemplates();});
     }
     private void drawPreviewArtwork(FrameLayout frame,Template t){
+        View pattern=new PreviewPattern(this,t); frame.addView(pattern,new FrameLayout.LayoutParams(-1,-1));
         View border=new View(this); border.setBackground(drawable(Color.TRANSPARENT,4,t.accent,2));
         FrameLayout.LayoutParams bp=new FrameLayout.LayoutParams(-1,-1); bp.setMargins(dp(5),dp(5),dp(5),dp(5)); frame.addView(border,bp);
         LinearLayout art=new LinearLayout(this); art.setOrientation(1); art.setGravity(Gravity.CENTER);
@@ -158,7 +167,7 @@ public class MainActivity extends Activity {
         if(req==PICK_CSV){csv=u;try{people.clear();people.addAll(readNames(u));csvStatus.setText("✓ Загружено участников: "+people.size());}catch(Exception e){csvStatus.setText("Не удалось прочитать CSV: "+e.getMessage());}}
         if(req==PICK_TEMPLATE){
             String mime=getContentResolver().getType(u); String n="Мой шаблон "+(templates.size()-3);
-            Template t=new Template(n,"Мои шаблоны",Color.rgb(246,245,241),Color.rgb(104,91,142)); t.uri=u; templates.add(t); selected=t; updateSelected();
+            Template t=new Template(n,"Мои шаблоны",Color.rgb(246,245,241),Color.rgb(104,91,142),0); t.uri=u; templates.add(t); selected=t; updateSelected();
             new AlertDialog.Builder(this).setTitle("Шаблон добавлен").setMessage("Макет добавлен в галерею. Он будет использоваться как фон сертификата.").setPositiveButton("Отлично",null).show();
         }
         if(req==PICK_FOLDER){
@@ -166,6 +175,20 @@ public class MainActivity extends Activity {
             getPreferences(MODE_PRIVATE).edit().putString("save_tree_uri",u.toString()).apply();
             updateSaveLocation();
             toast("Папка сохранения выбрана");
+        }
+    }
+
+    private class PreviewPattern extends View {
+        private final Template t; private final Paint paint=new Paint(3);
+        PreviewPattern(Context context,Template template){super(context);t=template;}
+        @Override protected void onDraw(Canvas canvas){
+            super.onDraw(canvas);float w=getWidth(),h=getHeight();paint.setColor(t.accent);paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(1.2f);
+            canvas.drawRoundRect(5,5,w-5,h-5,7,7,paint);
+            if(t.style%4==0){for(int y=15;y<h;y+=24){canvas.drawCircle(13,y,5,paint);canvas.drawCircle(w-13,y,5,paint);}canvas.drawOval(w*.22f,h*.12f,w*.78f,h*.9f,paint);}
+            else if(t.style%4==1){for(int x=15;x<w;x+=22){canvas.drawCircle(x,12,3,paint);canvas.drawCircle(x,h-12,3,paint);}}
+            else if(t.style%4==2){for(int k=0;k<8;k++){double a=k*Math.PI/4;canvas.drawCircle((float)(w/2+Math.cos(a)*w*.36),(float)(h/2+Math.sin(a)*h*.34),5,paint);}}
+            else{for(int x=12;x<w-12;x+=25){canvas.drawLine(x,8,x+12,20,paint);canvas.drawLine(x+12,20,x+24,8,paint);}}
+            paint.setStyle(Paint.Style.FILL);
         }
     }
 
@@ -315,6 +338,22 @@ public class MainActivity extends Activity {
     private void drawDesign(Canvas c,Paint p,Template t){
         p.setColor(t.color);c.drawColor(t.color);p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(4);p.setColor(t.accent);c.drawRect(24,24,818,571,p);p.setStrokeWidth(1);c.drawRect(36,36,806,559,p);
         p.setStyle(Paint.Style.FILL);p.setTextAlign(Paint.Align.CENTER);p.setColor(t.accent);p.setTextSize(30);c.drawText("✦",421,75,p);
+        p.setStrokeWidth(1.5f);p.setStyle(Paint.Style.STROKE);
+        if(t.style%4==0){
+            for(int side:new int[]{0,1}){float x=side==0?72:770;for(int k=0;k<5;k++){c.drawCircle(x,110+k*88,18,p);c.drawCircle(x,110+k*88,11,p);}}
+            c.drawOval(170,54,672,541,p);
+        }else if(t.style%4==1){
+            for(int x=90;x<=752;x+=44){c.drawCircle(x,58,7,p);c.drawCircle(x,537,7,p);}
+            for(int y=105;y<=490;y+=48){c.drawCircle(57,y,7,p);c.drawCircle(785,y,7,p);}
+            c.drawRoundRect(52,52,790,543,24,24,p);
+        }else if(t.style%4==2){
+            for(int k=0;k<12;k++){double a=k*Math.PI/6;float x=(float)(421+Math.cos(a)*290),y=(float)(297+Math.sin(a)*205);c.drawCircle(x,y,22,p);c.drawCircle(x,y,12,p);}
+            c.drawCircle(421,297,145,p);c.drawCircle(421,297,153,p);
+        }else{
+            for(int k=0;k<9;k++){float inset=48+k*8;c.drawRoundRect(inset,inset*.62f,842-inset,595-inset*.62f,18,18,p);}
+            for(int x=105;x<760;x+=55){c.drawLine(x,44,x+24,68,p);c.drawLine(x+24,68,x+48,44,p);}
+        }
+        p.setStyle(Paint.Style.FILL);
     }
     private void drawFit(Canvas c,String s,float x,float y,float width,Paint p,float size,float min){p.setTextSize(size);while(p.measureText(s)>width&&size>min){size--;p.setTextSize(size);}c.drawText(s,x,y,p);}
     private String safe(String s){return s.replaceAll("[\\\\/:*?\"<>|]","_").trim().replaceAll("\\s+","_");}
