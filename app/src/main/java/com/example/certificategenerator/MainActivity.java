@@ -2,6 +2,7 @@ package com.example.certificategenerator;
 
 import android.app.*;
 import android.content.*;
+import android.database.Cursor;
 import android.graphics.*;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.pdf.PdfDocument;
