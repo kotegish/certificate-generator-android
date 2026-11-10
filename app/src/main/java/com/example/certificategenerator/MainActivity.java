@@ -35,7 +35,7 @@ public class MainActivity extends Activity {
     private BroadcastReceiver updateReceiver;
     private long updateDownloadId=-1;
     private Template selected;
-    private LinearLayout root;
+    private LinearLayout root, previewRow;
     private int ink=Color.rgb(31,43,62), muted=Color.rgb(111,122,139), accent=Color.rgb(72,91,176);
 
     static class Template {
@@ -65,6 +65,12 @@ public class MainActivity extends Activity {
         templates.add(new Template("Красно-золотая грамота","Грамоты",Color.rgb(249,232,194),Color.rgb(157,40,27),18));
         templates.add(new Template("Чёрное золото","Сертификаты",Color.rgb(30,32,39),Color.rgb(216,177,94),19));
         templates.add(new Template("Lash Master","Сертификаты",Color.rgb(251,242,239),Color.rgb(177,125,112),20));
+        templates.add(new Template("Вензеля барокко","Грамоты",Color.rgb(250,244,226),Color.rgb(151,105,45),21));
+        templates.add(new Template("Королевская печать","Дипломы",Color.rgb(246,239,219),Color.rgb(126,82,31),22));
+        templates.add(new Template("Флорентийский орнамент","Сертификаты",Color.rgb(239,246,237),Color.rgb(48,111,77),23));
+        templates.add(new Template("Лавровая симметрия","Дипломы",Color.rgb(243,246,235),Color.rgb(99,119,62),24));
+        templates.add(new Template("Ажурное золото","Грамоты",Color.rgb(251,246,235),Color.rgb(172,127,56),25));
+        templates.add(new Template("Пудровые вензеля","Lash Master",Color.rgb(252,240,242),Color.rgb(174,112,131),26));
         selected=templates.get(0);
         String savedTree=getPreferences(MODE_PRIVATE).getString("save_tree_uri",null);
         if(savedTree!=null)try{saveTree=Uri.parse(savedTree);}catch(Exception ignored){}
@@ -88,8 +94,8 @@ public class MainActivity extends Activity {
         TextView step=txt("ШАГ 1 · ДИЗАЙН",11,accent,true); hero.addView(step);
         TextView chooseTitle=txt("Выберите оформление",19,ink,true); chooseTitle.setPadding(0,dp(6),0,dp(10)); hero.addView(chooseTitle);
         selectedLabel=txt("",13,muted,true); hero.addView(selectedLabel);
-        LinearLayout previewRow=new LinearLayout(this); previewRow.setOrientation(0); previewRow.setPadding(0,dp(12),0,dp(8)); hero.addView(previewRow);
-        addPreview(previewRow,templates.get(0)); addPreview(previewRow,templates.get(1)); addPreview(previewRow,templates.get(2));
+        previewRow=new LinearLayout(this); previewRow.setOrientation(0); previewRow.setPadding(0,dp(12),0,dp(8)); hero.addView(previewRow);
+        refreshPreviewRow();
         Button gallery=button("Открыть все шаблоны",accent); hero.addView(gallery); gallery.setOnClickListener(v->showTemplates());
 
         LinearLayout custom=card(); custom.setOrientation(0); custom.setGravity(Gravity.CENTER_VERTICAL); custom.setPadding(dp(16),dp(13),dp(16),dp(13));
@@ -159,9 +165,27 @@ public class MainActivity extends Activity {
                 item.setOnClickListener(v->{selected=t;updateSelected();});
             }
         }
-        new AlertDialog.Builder(this).setTitle("Выберите дизайн сертификата").setView(scroll).setPositiveButton("Готово",null).show();
+        AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Выберите дизайн сертификата").setView(scroll).setNegativeButton("Закрыть",null).create();
+        dialog.show();
+        for(int i=0;i<list.getChildCount();i++){
+            LinearLayout row=(LinearLayout)list.getChildAt(i);
+            for(int j=0;j<row.getChildCount();j++){
+                View item=row.getChildAt(j);
+                final int index=i*2+j;
+                item.setOnClickListener(v->{selected=templates.get(index);updateSelected();dialog.dismiss();});
+            }
+        }
     }
-    private void updateSelected(){if(selectedLabel!=null) selectedLabel.setText("✓ Выбранный дизайн: "+selected.name+"  ·  "+selected.category);}
+    private void refreshPreviewRow(){
+        if(previewRow==null||templates.isEmpty())return;
+        previewRow.removeAllViews();
+        int index=templates.indexOf(selected);if(index<0)index=0;
+        for(int n=0;n<3;n++)addPreview(previewRow,templates.get((index+n)%templates.size()));
+    }
+    private void updateSelected(){
+        if(selectedLabel!=null)selectedLabel.setText("✓ Выбранный дизайн: "+selected.name+"  ·  "+selected.category);
+        refreshPreviewRow();
+    }
     private void pickTemplate(){
         Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT); i.addCategory(Intent.CATEGORY_OPENABLE); i.setType("*/*");
         i.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"image/jpeg","image/png","application/pdf"}); startActivityForResult(i,PICK_TEMPLATE);
@@ -475,6 +499,21 @@ public class MainActivity extends Activity {
                 for(int x:new int[]{110,732})for(int y:new int[]{110,485}){c.drawCircle(x,y,24,p);c.drawCircle(x,y,15,p);}
                 p.setStyle(Paint.Style.FILL);p.setTextSize(13);c.drawText("LASH  •  BEAUTY  •  MASTER",421,500,p);
             }
+        }
+        if(t.style>=21){
+            p.setStyle(Paint.Style.STROKE);p.setColor(t.accent);p.setStrokeCap(Paint.Cap.ROUND);p.setStrokeWidth(2.4f);
+            Path flourish=new Path();
+            flourish.moveTo(65,295);flourish.cubicTo(28,250,55,205,100,190);flourish.cubicTo(145,174,165,215,135,238);flourish.cubicTo(111,257,87,232,105,218);
+            flourish.cubicTo(145,185,183,145,150,105);flourish.cubicTo(126,76,89,92,94,121);flourish.cubicTo(99,145,130,144,132,124);
+            flourish.cubicTo(145,90,184,82,208,108);flourish.cubicTo(245,150,193,190,171,220);flourish.cubicTo(142,258,166,294,202,278);
+            c.drawPath(flourish,p);
+            Matrix mirror=new Matrix();mirror.setScale(-1,1,421,0);Path right=new Path();flourish.transform(mirror,right);c.drawPath(right,p);
+            Path lower=new Path();lower.moveTo(70,300);lower.cubicTo(110,330,150,330,180,300);lower.cubicTo(215,270,250,280,270,300);
+            lower.cubicTo(310,340,360,340,421,300);lower.cubicTo(482,340,532,340,572,300);lower.cubicTo(592,280,627,270,662,300);lower.cubicTo(692,330,732,330,772,300);c.drawPath(lower,p);
+            p.setStrokeWidth(1.2f);c.drawOval(175,52,667,543,p);c.drawRoundRect(38,38,804,557,32,32,p);
+            for(int x:new int[]{55,787})for(int y:new int[]{55,540}){c.drawCircle(x,y,25,p);c.drawCircle(x,y,17,p);c.drawCircle(x,y,8,p);}
+            if(t.style==22||t.style==25){p.setStrokeWidth(3);c.drawOval(300,45,542,135,p);c.drawOval(300,460,542,550,p);p.setStrokeWidth(1.5f);c.drawCircle(421,90,28,p);c.drawCircle(421,505,28,p);}
+            if(t.style==23||t.style==26){p.setStrokeWidth(1.5f);for(int k=0;k<8;k++){double a=k*Math.PI/4;float x=(float)(421+Math.cos(a)*340),y=(float)(297+Math.sin(a)*225);c.drawCircle(x,y,13,p);c.drawCircle(x,y,6,p);}c.drawLine(235,88,607,88,p);c.drawLine(235,507,607,507,p);}
         }
         if(t.style>=12){
             p.setStyle(Paint.Style.STROKE);p.setColor(t.accent);p.setStrokeWidth(2.2f);
