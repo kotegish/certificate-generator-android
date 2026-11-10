@@ -12,5 +12,6 @@ android {
         targetSdk 35
         versionCode 3
         versionName '1.2'
+    // Release channel: v1.2
     }
 }
