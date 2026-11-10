@@ -28,7 +28,7 @@ public class MainActivity extends Activity {
     private static final int PICK_CSV=41, PICK_TEMPLATE=42, PICK_FOLDER=43;
     private final ArrayList<String> people=new ArrayList<>();
     private final ArrayList<Template> templates=new ArrayList<>();
-    private EditText event,date,issuer,designPrompt;
+    private EditText event,date,issuer;
     private TextView csvStatus,selectedLabel,saveLocation;
     private Uri saveTree;
     private Uri csv;
@@ -60,6 +60,11 @@ public class MainActivity extends Activity {
         templates.add(new Template("Сакура","Сертификаты",Color.rgb(252,239,244),Color.rgb(190,111,143),9));
         templates.add(new Template("Геометрия","Дипломы",Color.rgb(239,242,247),Color.rgb(75,91,119),10));
         templates.add(new Template("Праздничный узор","Грамоты",Color.rgb(250,243,229),Color.rgb(167,72,61),11));
+        templates.add(new Template("День России","Дипломы",Color.rgb(247,250,255),Color.rgb(26,74,157),16));
+        templates.add(new Template("Современный конкурс","Дипломы",Color.rgb(248,248,252),Color.rgb(48,53,205),17));
+        templates.add(new Template("Красно-золотая грамота","Грамоты",Color.rgb(249,232,194),Color.rgb(157,40,27),18));
+        templates.add(new Template("Чёрное золото","Сертификаты",Color.rgb(30,32,39),Color.rgb(216,177,94),19));
+        templates.add(new Template("Lash Master","Сертификаты",Color.rgb(251,242,239),Color.rgb(177,125,112),20));
         selected=templates.get(0);
         String savedTree=getPreferences(MODE_PRIVATE).getString("save_tree_uri",null);
         if(savedTree!=null)try{saveTree=Uri.parse(savedTree);}catch(Exception ignored){}
@@ -93,11 +98,7 @@ public class MainActivity extends Activity {
         customText.addView(txt("Свой дизайн",16,ink,true)); customText.addView(txt("Добавьте фоновый макет JPG, PNG или PDF",12,muted,false));
         Button importBtn=button("＋ Добавить",Color.rgb(235,238,250)); importBtn.setTextColor(accent); custom.addView(importBtn); importBtn.setOnClickListener(v->pickTemplate());
 
-        LinearLayout promptCard=card(); promptCard.setOrientation(1); promptCard.setPadding(dp(16),dp(14),dp(16),dp(16)); root.addView(promptCard,params(-1,-2,12));
-        TextView promptTitle=txt("Создать дизайн по описанию",16,ink,true); promptCard.addView(promptTitle);
-        TextView promptHint=txt("Опишите стиль своими словами. Генератор подберёт цвета, рамку и декоративные элементы прямо на телефоне — без интернета и оплаты.",12,muted,false); promptHint.setPadding(0,dp(5),0,dp(10)); promptCard.addView(promptHint);
-        designPrompt=field("Например: красно-золотая старинная грамота"); promptCard.addView(designPrompt,params(-1,dp(50),0));
-        Button promptBtn=button("Создать оформление",Color.rgb(235,238,250)); promptBtn.setTextColor(accent); promptCard.addView(promptBtn,params(-1,dp(48),10)); promptBtn.setOnClickListener(v->createDesignFromPrompt());
+        TextView galleryHint=txt("В галерее — готовые оформления для дипломов, грамот, конкурсов и beauty-обучения.",12,muted,false); galleryHint.setPadding(0,dp(8),0,0); root.addView(galleryHint,params(-1,-2,4));
 
         TextView s2=section("ШАГ 2 · ДАННЫЕ"); root.addView(s2,params(-1,-2,24));
         LinearLayout data=card(); data.setOrientation(1); data.setPadding(dp(16),dp(14),dp(16),dp(16)); root.addView(data,params(-1,-2,10));
@@ -141,23 +142,6 @@ public class MainActivity extends Activity {
         TextView line=txt("ИМЯ УЧАСТНИКА",7,ink,true); line.setGravity(Gravity.CENTER); line.setPadding(0,dp(3),0,0); art.addView(line);
         View rule=new View(this); rule.setBackgroundColor(t.accent); LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(dp(48),dp(1)); rp.topMargin=dp(3); art.addView(rule,rp);
     }
-    private void createDesignFromPrompt(){
-        String prompt=designPrompt.getText().toString().trim().toLowerCase(new Locale("ru"));
-        if(prompt.isEmpty()){toast("Опишите желаемый дизайн");return;}
-        int bg=Color.rgb(248,245,235),fg=Color.rgb(157,112,47),style=12;
-        String category="Сертификаты",name="Дизайн по описанию";
-        if(prompt.contains("красн")||prompt.contains("бордов")||prompt.contains("рубинов")){bg=Color.rgb(250,239,220);fg=Color.rgb(151,38,31);style=12;name="Красно-золотая грамота";category="Грамоты";}
-        if(prompt.contains("син")||prompt.contains("голуб")||prompt.contains("росси")){bg=Color.rgb(239,245,253);fg=Color.rgb(27,72,157);style=13;name="Торжественный синий диплом";category="Дипломы";}
-        if(prompt.contains("зел")||prompt.contains("изумруд")){bg=Color.rgb(237,246,237);fg=Color.rgb(36,112,78);style=14;name="Изумрудный сертификат";}
-        if(prompt.contains("чёрн")||prompt.contains("черн")){bg=Color.rgb(34,39,49);fg=Color.rgb(218,177,91);style=15;name="Чёрно-золотой премиум";category="Дипломы";}
-        if(prompt.contains("розов")||prompt.contains("сакур")){bg=Color.rgb(252,239,244);fg=Color.rgb(183,105,139);style=14;name="Нежный сертификат";}
-        if(prompt.contains("минимал")||prompt.contains("современ")||prompt.contains("геометр")){style=15;if(!prompt.contains("чёрн")&&!prompt.contains("черн")){bg=Color.rgb(246,248,252);fg=Color.rgb(58,79,123);}name="Современный минимализм";}
-        if(prompt.contains("пергам")||prompt.contains("старин")||prompt.contains("винтаж")||prompt.contains("орнамент")){bg=Color.rgb(246,232,199);fg=Color.rgb(133,67,35);style=12;name="Винтажная грамота";category="Грамоты";}
-        Template generated=new Template(name,category,bg,fg,style);
-        templates.add(generated);selected=generated;updateSelected();
-        new AlertDialog.Builder(this).setTitle("Оформление создано").setMessage("Создан вариант «"+name+"» по вашему описанию. Генератор комбинирует встроенные палитры и графические элементы, не использует платные сервисы и работает без интернета.").setPositiveButton("Открыть галерею",(d,w)->showTemplates()).setNegativeButton("Готово",null).show();
-    }
-
     private void showTemplates(){
         ScrollView scroll=new ScrollView(this); LinearLayout list=new LinearLayout(this); list.setOrientation(1); list.setPadding(dp(10),dp(8),dp(10),dp(8)); scroll.addView(list);
         for(int i=0;i<templates.size();i+=2){
@@ -429,7 +413,7 @@ public class MainActivity extends Activity {
             p.setTextAlign(Paint.Align.CENTER);p.setTypeface(Typeface.create("serif",Typeface.BOLD));p.setColor(selected.accent);p.setTextSize(17);c.drawText(selected.category.equals("Дипломы")?"ДИПЛОМ":selected.category.equals("Грамоты")?"ПОЧЁТНАЯ ГРАМОТА":"СЕРТИФИКАТ",421,132,p);
             p.setColor(ink);p.setTypeface(Typeface.create("serif",0));p.setTextSize(23);c.drawText("настоящим подтверждается, что",421,205,p);
             p.setTypeface(Typeface.create("serif",Typeface.BOLD));p.setTextSize(34);drawFit(c,person,421,285,690,p,34,18);
-            p.setTypeface(Typeface.create("sans-serif",0));p.setTextSize(18);c.drawText("успешно принял(а) участие в мероприятии",421,350,p);
+            p.setTypeface(Typeface.create("sans-serif",0));p.setTextSize(18);c.drawText(selected.style==20?"успешно завершила профессиональное обучение":"успешно принял(а) участие в мероприятии",421,350,p);
             p.setTypeface(Typeface.create("serif",Typeface.BOLD));p.setTextSize(25);p.setColor(selected.accent);drawFit(c,title,421,405,690,p,25,15);
             p.setTypeface(Typeface.create("sans-serif",0));p.setTextSize(14);p.setColor(muted);c.drawText("Дата: "+d,250,480,p);c.drawText("№ "+String.format(Locale.US,"%05d",num),590,480,p);
             p.setStrokeWidth(1);c.drawLine(90,515,300,515,p);c.drawLine(540,515,750,515,p);p.setTextSize(12);c.drawText(org.isEmpty()?"Организатор":org,195,535,p);c.drawText("Подпись",645,535,p);
@@ -460,6 +444,37 @@ public class MainActivity extends Activity {
         }else{
             for(int k=0;k<9;k++){float inset=48+k*8;c.drawRoundRect(inset,inset*.62f,842-inset,595-inset*.62f,18,18,p);}
             for(int x=105;x<760;x+=55){c.drawLine(x,44,x+24,68,p);c.drawLine(x+24,68,x+48,44,p);}
+        }
+        if(t.style>=16){
+            p.setStyle(Paint.Style.STROKE);p.setColor(t.accent);p.setStrokeWidth(2.4f);
+            if(t.style==16){
+                Path wave=new Path();wave.moveTo(0,185);wave.cubicTo(190,270,285,135,460,210);wave.cubicTo(620,280,730,165,842,210);wave.lineTo(842,245);wave.cubicTo(700,205,630,315,450,245);wave.cubicTo(270,175,165,315,0,225);wave.close();
+                p.setStyle(Paint.Style.FILL);p.setColor(Color.rgb(28,77,164));c.drawPath(wave,p);
+                Path red=new Path();red.moveTo(0,220);red.cubicTo(180,305,300,190,460,245);red.cubicTo(650,310,740,205,842,245);red.lineTo(842,270);red.cubicTo(700,245,620,345,445,280);red.cubicTo(270,220,160,350,0,255);red.close();p.setColor(Color.rgb(194,38,48));c.drawPath(red,p);
+                p.setStyle(Paint.Style.STROKE);p.setColor(t.accent);p.setStrokeWidth(2);c.drawRect(35,35,807,560,p);
+                p.setStyle(Paint.Style.FILL);p.setTextSize(28);c.drawText("✦",421,82,p);
+            }else if(t.style==17){
+                p.setStrokeWidth(10);c.drawRoundRect(55,55,787,540,48,48,p);
+                p.setStrokeWidth(2);c.drawRoundRect(75,75,767,520,38,38,p);
+                p.setStrokeWidth(7);c.drawArc(-230,80,370,680,280,210,false,p);c.drawArc(470,-90,1070,510,100,210,false,p);
+                p.setStrokeWidth(1.5f);c.drawLine(180,112,662,112,p);c.drawLine(180,483,662,483,p);
+                p.setStyle(Paint.Style.FILL);p.setTextSize(25);c.drawText("✧",421,103,p);
+            }else if(t.style==18){
+                p.setStrokeWidth(7);c.drawRect(25,25,817,570,p);p.setStrokeWidth(2);c.drawRect(43,43,799,552,p);
+                for(int x:new int[]{65,777})for(int y:new int[]{65,530}){c.drawCircle(x,y,30,p);c.drawCircle(x,y,21,p);c.drawCircle(x,y,11,p);}
+                p.setStrokeWidth(5);c.drawOval(170,45,672,132,p);c.drawOval(170,463,672,550,p);
+                for(int k=0;k<9;k++){float x=90+k*82;c.drawCircle(x,48,5,p);c.drawCircle(x,547,5,p);}
+            }else if(t.style==19){
+                p.setStrokeWidth(3);c.drawRect(32,32,810,563,p);p.setStrokeWidth(1);c.drawRect(48,48,794,547,p);
+                p.setStrokeWidth(2);c.drawLine(120,85,722,85,p);c.drawLine(120,510,722,510,p);
+                p.setStyle(Paint.Style.FILL);p.setTextSize(30);c.drawText("✦",421,78,p);c.drawText("✦",421,535,p);
+            }else{
+                p.setStrokeWidth(2);c.drawRoundRect(42,42,800,553,28,28,p);c.drawRoundRect(54,54,788,541,22,22,p);
+                p.setStyle(Paint.Style.FILL);p.setTextSize(36);c.drawText("✧",421,104,p);
+                p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(1.6f);
+                for(int x:new int[]{110,732})for(int y:new int[]{110,485}){c.drawCircle(x,y,24,p);c.drawCircle(x,y,15,p);}
+                p.setStyle(Paint.Style.FILL);p.setTextSize(13);c.drawText("LASH  •  BEAUTY  •  MASTER",421,500,p);
+            }
         }
         if(t.style>=12){
             p.setStyle(Paint.Style.STROKE);p.setColor(t.accent);p.setStrokeWidth(2.2f);
