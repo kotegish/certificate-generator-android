@@ -148,7 +148,11 @@ public class MainActivity extends Activity {
             float scale=Math.min(getWidth()/842f,getHeight()/595f);
             float dx=(getWidth()-842f*scale)/2f,dy=(getHeight()-595f*scale)/2f;
             canvas.save();canvas.translate(dx,dy);canvas.scale(scale,scale);
-            drawCertificate(canvas,paint,template,"ИМЯ УЧАСТНИКА","Название мероприятия","12.12.2026","Организатор",1,true);
+            if(template.uri!=null){
+                try{Bitmap original=loadTemplate(template.uri);if(original!=null){canvas.drawBitmap(original,null,new Rect(0,0,842,595),paint);original.recycle();}}
+                catch(Exception ignored){}
+                drawCustomFields(canvas,paint,template,"ИМЯ УЧАСТНИКА","Название мероприятия","12.12.2026","Организатор",1);
+            }else drawCertificate(canvas,paint,template,"ИМЯ УЧАСТНИКА","Название мероприятия","12.12.2026","Организатор",1,true);
             canvas.restore();
         }
     }
