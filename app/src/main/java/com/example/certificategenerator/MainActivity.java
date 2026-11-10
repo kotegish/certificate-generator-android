@@ -177,13 +177,13 @@ public class MainActivity extends Activity {
             for(int j=i;j<Math.min(i+2,templates.size());j++){
                 final Template t=templates.get(j);
                 LinearLayout item=new LinearLayout(this); item.setOrientation(1); item.setPadding(dp(7),dp(7),dp(7),dp(7));
-                item.setBackground(drawable(Color.WHITE,13,t==selected?accent:Color.rgb(232,235,241),t==selected?3:1));
+                item.setBackground(drawable(Color.rgb(25,22,18),13,t==selected?Color.rgb(218,174,83):Color.rgb(83,70,48),t==selected?3:1));
                 LinearLayout.LayoutParams ip=new LinearLayout.LayoutParams(0,-2,1); ip.setMargins(dp(4),0,dp(4),0); row.addView(item,ip);
                 FrameLayout preview=new FrameLayout(this); preview.setBackground(drawable(t.color,8,Color.TRANSPARENT,0)); item.addView(preview,new LinearLayout.LayoutParams(-1,dp(105)));
                 drawPreviewArtwork(preview,t);
-                TextView name=txt(t.name,13,ink,true); name.setPadding(0,dp(8),0,dp(2)); item.addView(name);
-                TextView category=txt(t.category,10,muted,false); item.addView(category);
-                TextView state=txt(t==selected?"✓ Выбран":"Нажмите для выбора",10,t==selected?accent:muted,true); state.setPadding(0,dp(5),0,0); item.addView(state);
+                TextView name=txt(t.name,13,Color.rgb(246,229,190),true); name.setPadding(0,dp(8),0,dp(2)); item.addView(name);
+                TextView category=txt(t.category,10,Color.rgb(190,174,143),false); item.addView(category);
+                TextView state=txt(t==selected?"✓ Выбран":"Нажмите для выбора",10,t==selected?Color.rgb(232,190,93):Color.rgb(176,163,140),true); state.setPadding(0,dp(5),0,0); item.addView(state);
                 item.setOnClickListener(v->{selected=t;updateSelected();});
             }
         }
