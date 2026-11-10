@@ -567,7 +567,7 @@ public class MainActivity extends Activity {
             for(int k=0;k<9;k++){float inset=48+k*8;c.drawRoundRect(inset,inset*.62f,842-inset,595-inset*.62f,18,18,p);}
             for(int x=105;x<760;x+=55){c.drawLine(x,44,x+24,68,p);c.drawLine(x+24,68,x+48,44,p);}
         }
-        if(t.style>=16){
+        if(t.style>=16&&t.style<=26){
             p.setStyle(Paint.Style.STROKE);p.setColor(t.accent);p.setStrokeWidth(2.4f);
             if(t.style==16){
                 Path wave=new Path();wave.moveTo(0,185);wave.cubicTo(190,270,285,135,460,210);wave.cubicTo(620,280,730,165,842,210);wave.lineTo(842,245);wave.cubicTo(700,205,630,315,450,245);wave.cubicTo(270,175,165,315,0,225);wave.close();
@@ -598,7 +598,7 @@ public class MainActivity extends Activity {
                 p.setStyle(Paint.Style.FILL);p.setTextSize(13);c.drawText("LASH  •  BEAUTY  •  MASTER",421,500,p);
             }
         }
-        if(t.style>=21){
+        if(t.style>=21&&t.style<=26){
             p.setStyle(Paint.Style.STROKE);p.setColor(t.accent);p.setStrokeCap(Paint.Cap.ROUND);p.setStrokeWidth(2.4f);
             Path flourish=new Path();
             flourish.moveTo(65,295);flourish.cubicTo(28,250,55,205,100,190);flourish.cubicTo(145,174,165,215,135,238);flourish.cubicTo(111,257,87,232,105,218);
@@ -613,7 +613,7 @@ public class MainActivity extends Activity {
             if(t.style==22||t.style==25){p.setStrokeWidth(3);c.drawOval(300,45,542,135,p);c.drawOval(300,460,542,550,p);p.setStrokeWidth(1.5f);c.drawCircle(421,90,28,p);c.drawCircle(421,505,28,p);}
             if(t.style==23||t.style==26){p.setStrokeWidth(1.5f);for(int k=0;k<8;k++){double a=k*Math.PI/4;float x=(float)(421+Math.cos(a)*340),y=(float)(297+Math.sin(a)*225);c.drawCircle(x,y,13,p);c.drawCircle(x,y,6,p);}c.drawLine(235,88,607,88,p);c.drawLine(235,507,607,507,p);}
         }
-        if(t.style>=12){
+        if(t.style>=12&&t.style<=15){
             p.setStyle(Paint.Style.STROKE);p.setColor(t.accent);p.setStrokeWidth(2.2f);
             if(t.style==12){
                 c.drawRoundRect(44,44,798,551,28,28,p);c.drawRoundRect(57,57,785,538,22,22,p);
