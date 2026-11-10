@@ -48,7 +48,9 @@ public class MainActivity extends Activity {
         Template(String n,String c,int col,int a,int st){name=n;category=c;color=col;accent=a;style=st;}
     }
 
-    private void addArtworkTemplate(String name,String category,String asset){Template t=new Template(name,category,Color.rgb(35,29,22),Color.rgb(213,174,91),0);t.assetName=asset;templates.add(t);}\n\n    @Override public void onCreate(Bundle b){
+    private void addArtworkTemplate(String name,String category,String asset){Template t=new Template(name,category,Color.rgb(35,29,22),Color.rgb(213,174,91),0);t.assetName=asset;templates.add(t);}
+
+    @Override public void onCreate(Bundle b){
         super.onCreate(b);
         getWindow().setStatusBarColor(Color.rgb(246,247,251));
         getWindow().setNavigationBarColor(Color.rgb(246,247,251));
