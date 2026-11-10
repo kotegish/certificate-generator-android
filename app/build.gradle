@@ -6,12 +6,32 @@ android {
     namespace 'com.example.certificategenerator'
     compileSdk 35
 
+    signingConfigs {
+        release {
+            def keystorePath = System.getenv('ANDROID_KEYSTORE_PATH')
+            if (keystorePath) {
+                storeFile file(keystorePath)
+                storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('ANDROID_KEY_ALIAS')
+                keyPassword System.getenv('ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            if (System.getenv('ANDROID_KEYSTORE_PATH')) {
+                signingConfig signingConfigs.release
+            }
+            minifyEnabled false
+        }
+    }
+
     defaultConfig {
         applicationId 'com.example.certificategenerator'
         minSdk 23
         targetSdk 35
-        versionCode 4
-        versionName '1.3'
-    // Release channel: v1.3
+        versionCode 5
+        versionName '1.4'
     }
 }
