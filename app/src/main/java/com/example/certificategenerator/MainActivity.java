@@ -63,6 +63,7 @@ public class MainActivity extends Activity {
         selected=templates.get(0);
         String savedTree=getPreferences(MODE_PRIVATE).getString("save_tree_uri",null);
         if(savedTree!=null)try{saveTree=Uri.parse(savedTree);}catch(Exception ignored){}
+        updateDownloadId=getPreferences(MODE_PRIVATE).getLong("update_download_id",-1);
         build();
         registerUpdateReceiver();
     }
@@ -274,29 +275,36 @@ public class MainActivity extends Activity {
     private void registerUpdateReceiver(){
         updateReceiver=new BroadcastReceiver(){
             @Override public void onReceive(Context context,Intent intent){
-                if(!DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(intent.getAction()))return;
-                long id=intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID,-1);
-                if(id!=updateDownloadId)return;
-                DownloadManager manager=(DownloadManager)getSystemService(DOWNLOAD_SERVICE);
-                DownloadManager.Query query=new DownloadManager.Query().setFilterById(id);
-                try(Cursor cursor=manager.query(query)){
-                    if(cursor!=null&&cursor.moveToFirst()){
-                        int status=cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
-                        if(status==DownloadManager.STATUS_SUCCESSFUL){
-                            Uri apk=manager.getUriForDownloadedFile(id);
-                            if(apk!=null){getPreferences(MODE_PRIVATE).edit().putString("pending_update_uri",apk.toString()).apply();installPendingUpdate();}
-                            else toast("Не удалось получить загруженный APK");
-                        }else{
-                            int reason=cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON));
-                            toast("Загрузка обновления не удалась. Код: "+reason);
-                        }
-                    }
-                }catch(Exception e){toast("Ошибка загрузки обновления: "+e.getMessage());}
+                if(DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(intent.getAction())){
+                    long id=intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID,-1);
+                    if(id==getPreferences(MODE_PRIVATE).getLong("update_download_id",-2))processUpdateDownload(id);
+                }
             }
         };
         IntentFilter filter=new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
         if(android.os.Build.VERSION.SDK_INT>=33)registerReceiver(updateReceiver,filter,Context.RECEIVER_NOT_EXPORTED);
         else registerReceiver(updateReceiver,filter);
+    }
+    private void processUpdateDownload(long id){
+        DownloadManager manager=(DownloadManager)getSystemService(DOWNLOAD_SERVICE);
+        DownloadManager.Query query=new DownloadManager.Query().setFilterById(id);
+        try(Cursor cursor=manager.query(query)){
+            if(cursor==null||!cursor.moveToFirst())return;
+            int status=cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
+            if(status==DownloadManager.STATUS_SUCCESSFUL){
+                Uri apk=manager.getUriForDownloadedFile(id);
+                if(apk!=null){
+                    getPreferences(MODE_PRIVATE).edit().putString("pending_update_uri",apk.toString()).remove("update_download_id").apply();
+                    updateDownloadId=-1;
+                    installPendingUpdate();
+                }else toast("Не удалось получить загруженный APK");
+            }else if(status==DownloadManager.STATUS_FAILED){
+                int reason=cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON));
+                getPreferences(MODE_PRIVATE).edit().remove("update_download_id").apply();
+                updateDownloadId=-1;
+                toast("Загрузка обновления не удалась. Код: "+reason);
+            }
+        }catch(Exception e){toast("Ошибка загрузки обновления: "+e.getMessage());}
     }
     @Override protected void onDestroy(){
         if(updateReceiver!=null)try{unregisterReceiver(updateReceiver);}catch(Exception ignored){}
@@ -304,8 +312,10 @@ public class MainActivity extends Activity {
     }
     @Override protected void onResume(){
         super.onResume();
+        long pendingId=getPreferences(MODE_PRIVATE).getLong("update_download_id",-1);
+        if(pendingId!=-1)processUpdateDownload(pendingId);
         String pending=getPreferences(MODE_PRIVATE).getString("pending_update_uri",null);
-        if(pending!=null&&android.os.Build.VERSION.SDK_INT>=26&&getPackageManager().canRequestPackageInstalls())installPendingUpdate();
+        if(pending!=null)installPendingUpdate();
     }
     private void downloadUpdate(String url){
         try{
