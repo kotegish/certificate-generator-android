@@ -24,30 +24,53 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
-      - name: Build debug APK
+      - name: Build debug APK (development only)
         run: gradle assembleDebug
-      - name: Upload APK artifact
+      - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: certificate-generator-v1.3-apk
+          name: certificate-generator-debug-v1.4
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-      - name: Publish v1.3 GitHub Release
+      - name: Verify release signing secrets
+        if: contains(github.event.head_commit.message, '[release]')
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          test -n "$ANDROID_KEYSTORE_BASE64" || (echo "Missing ANDROID_KEYSTORE_BASE64 secret" && exit 1)
+          test -n "$ANDROID_KEYSTORE_PASSWORD" || (echo "Missing ANDROID_KEYSTORE_PASSWORD secret" && exit 1)
+          test -n "$ANDROID_KEY_ALIAS" || (echo "Missing ANDROID_KEY_ALIAS secret" && exit 1)
+          test -n "$ANDROID_KEY_PASSWORD" || (echo "Missing ANDROID_KEY_PASSWORD secret" && exit 1)
+      - name: Restore persistent signing key
+        if: contains(github.event.head_commit.message, '[release]')
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release-key.jks"
+          echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release-key.jks" >> "$GITHUB_ENV"
+      - name: Build signed release APK
+        if: contains(github.event.head_commit.message, '[release]')
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: gradle assembleRelease
+      - name: Publish v1.4 GitHub Release
         if: contains(github.event.head_commit.message, '[release]')
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.3
-          name: SoloDefStudio Certificate Generator 1.3
+          tag_name: v1.4
+          name: SoloDefStudio Certificate Generator 1.4
           target_commitish: ${{ github.sha }}
           body: |
-            Версия 1.3.
+            Версия 1.4.
 
-            Добавлена автоматическая проверка обновлений при запуске приложения.
-
-            Добавлены готовые шаблоны по референсам: патриотический, современный конкурсный, классический красно-золотой, чёрно-золотой и Lash Master.
-
-            APK подписан временным debug-ключом CI. Подпись APK пока использует CI debug-ключ; если Android обнаружит несовпадение подписи, обновление поверх старой установки будет отклонено.
-          files: app/build/outputs/apk/debug/app-debug.apk
+            APK для обновлений подписывается постоянным ключом проекта.
+            Для установки поверх предыдущей версии подпись должна совпадать с подписью уже установленного приложения.
+          files: app/build/outputs/apk/release/app-release.apk
           fail_on_unmatched_files: true
           overwrite_files: true
           make_latest: true
