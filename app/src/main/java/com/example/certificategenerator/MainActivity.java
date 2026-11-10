@@ -53,37 +53,21 @@ public class MainActivity extends Activity {
         getWindow().setStatusBarColor(Color.rgb(246,247,251));
         getWindow().setNavigationBarColor(Color.rgb(246,247,251));
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
-        templates.add(new Template("Золотая классика","Сертификаты",Color.rgb(250,246,235),Color.rgb(166,126,54),0));
-        templates.add(new Template("Королевский орнамент","Дипломы",Color.rgb(247,240,222),Color.rgb(137,93,35),1));
-        templates.add(new Template("Изумрудная вязь","Сертификаты",Color.rgb(235,246,239),Color.rgb(35,112,83),2));
-        templates.add(new Template("Синий гильош","Дипломы",Color.rgb(235,241,251),Color.rgb(43,77,145),3));
-        templates.add(new Template("Лавровый венок","Грамоты",Color.rgb(244,246,235),Color.rgb(104,125,65),4));
-        templates.add(new Template("Розовое золото","Сертификаты",Color.rgb(250,239,237),Color.rgb(177,105,103),5));
-        templates.add(new Template("Арт-деко","Дипломы",Color.rgb(31,39,57),Color.rgb(218,177,94),6));
-        templates.add(new Template("Ночная звезда","Сертификаты",Color.rgb(31,39,66),Color.rgb(224,195,119),7));
-        templates.add(new Template("Пергамент","Грамоты",Color.rgb(246,235,211),Color.rgb(130,91,48),8));
-        templates.add(new Template("Сакура","Сертификаты",Color.rgb(252,239,244),Color.rgb(190,111,143),9));
-        templates.add(new Template("Геометрия","Дипломы",Color.rgb(239,242,247),Color.rgb(75,91,119),10));
-        templates.add(new Template("Праздничный узор","Грамоты",Color.rgb(250,243,229),Color.rgb(167,72,61),11));
-        templates.add(new Template("День России","Дипломы",Color.rgb(247,250,255),Color.rgb(26,74,157),16));
-        templates.add(new Template("Современный конкурс","Дипломы",Color.rgb(248,248,252),Color.rgb(48,53,205),17));
-        templates.add(new Template("Красно-золотая грамота","Грамоты",Color.rgb(249,232,194),Color.rgb(157,40,27),18));
-        templates.add(new Template("Чёрное золото","Сертификаты",Color.rgb(30,32,39),Color.rgb(216,177,94),19));
-        templates.add(new Template("Lash Master","Сертификаты",Color.rgb(251,242,239),Color.rgb(177,125,112),20));
-        templates.add(new Template("Вензеля барокко","Грамоты",Color.rgb(250,244,226),Color.rgb(151,105,45),21));
-        templates.add(new Template("Королевская печать","Дипломы",Color.rgb(246,239,219),Color.rgb(126,82,31),22));
-        templates.add(new Template("Флорентийский орнамент","Сертификаты",Color.rgb(239,246,237),Color.rgb(48,111,77),23));
-        templates.add(new Template("Лавровая симметрия","Дипломы",Color.rgb(243,246,235),Color.rgb(99,119,62),24));
-        templates.add(new Template("Ажурное золото","Грамоты",Color.rgb(251,246,235),Color.rgb(172,127,56),25));
-        templates.add(new Template("Пудровые вензеля","Lash Master",Color.rgb(252,240,242),Color.rgb(174,112,131),26));
-        templates.add(new Template("Золотая классика · Премиум","Сертификаты",Color.rgb(250,247,239),Color.rgb(174,133,61),27));
-        templates.add(new Template("Королевский орнамент · Премиум","Дипломы",Color.rgb(248,243,231),Color.rgb(130,91,43),28));
-        templates.add(new Template("Изумрудная элегантность","Сертификаты",Color.rgb(237,245,239),Color.rgb(43,112,82),29));
-        templates.add(new Template("Синий премиум","Дипломы",Color.rgb(239,244,251),Color.rgb(48,83,145),30));
+        // Только художественная коллекция: 14 авторских оформлений.
+        templates.add(new Template("Барокко · Золото","Дипломы",Color.rgb(250,244,226),Color.rgb(151,105,45),21));
+        templates.add(new Template("Королевская печать","Сертификаты",Color.rgb(246,239,219),Color.rgb(126,82,31),22));
+        templates.add(new Template("Флорентийская вязь","Дипломы",Color.rgb(239,246,237),Color.rgb(48,111,77),23));
+        templates.add(new Template("Лавровая симфония","Грамоты",Color.rgb(243,246,235),Color.rgb(99,119,62),24));
+        templates.add(new Template("Ажурное золото","Сертификаты",Color.rgb(251,246,235),Color.rgb(172,127,56),25));
+        templates.add(new Template("Пудровый шёлк","Сертификаты",Color.rgb(252,240,242),Color.rgb(174,112,131),26));
+        templates.add(new Template("Золотая классика","Дипломы",Color.rgb(250,247,239),Color.rgb(174,133,61),27));
+        templates.add(new Template("Винтажный герб","Грамоты",Color.rgb(248,243,231),Color.rgb(130,91,43),28));
+        templates.add(new Template("Изумрудный сад","Сертификаты",Color.rgb(237,245,239),Color.rgb(43,112,82),29));
+        templates.add(new Template("Сапфировый атлас","Дипломы",Color.rgb(239,244,251),Color.rgb(48,83,145),30));
         templates.add(new Template("Лавровая награда","Грамоты",Color.rgb(245,247,237),Color.rgb(105,126,69),31));
-        templates.add(new Template("Розовое золото · Премиум","Сертификаты",Color.rgb(252,243,241),Color.rgb(181,119,112),32));
-        templates.add(new Template("Арт-деко · Премиум","Дипломы",Color.rgb(30,37,53),Color.rgb(222,184,104),33));
-        templates.add(new Template("Современный минимализм","Сертификаты",Color.rgb(250,250,248),Color.rgb(77,91,111),34));
+        templates.add(new Template("Розовое золото","Сертификаты",Color.rgb(252,243,241),Color.rgb(181,119,112),32));
+        templates.add(new Template("Арт-деко · Вечер","Дипломы",Color.rgb(30,37,53),Color.rgb(222,184,104),33));
+        templates.add(new Template("Перламутровый минимализм","Сертификаты",Color.rgb(250,250,248),Color.rgb(77,91,111),34));
         restoreCustomTemplates();
         selected=templates.get(0);
         String savedTree=getPreferences(MODE_PRIVATE).getString("save_tree_uri",null);
@@ -153,15 +137,33 @@ public class MainActivity extends Activity {
         wrap.setOnClickListener(v->{selected=t;updateSelected();showTemplates();});
     }
     private void drawPreviewArtwork(FrameLayout frame,Template t){
-        View pattern=new PreviewPattern(this,t); frame.addView(pattern,new FrameLayout.LayoutParams(-1,-1));
-        View border=new View(this); border.setBackground(drawable(Color.TRANSPARENT,4,t.accent,2));
-        FrameLayout.LayoutParams bp=new FrameLayout.LayoutParams(-1,-1); bp.setMargins(dp(5),dp(5),dp(5),dp(5)); frame.addView(border,bp);
-        LinearLayout art=new LinearLayout(this); art.setOrientation(1); art.setGravity(Gravity.CENTER);
-        FrameLayout.LayoutParams ap=new FrameLayout.LayoutParams(-1,-1); ap.setMargins(dp(9),dp(7),dp(9),dp(7)); frame.addView(art,ap);
-        TextView star=txt("✦",13,t.accent,true); star.setGravity(Gravity.CENTER); art.addView(star);
-        TextView heading=txt(t.category.equals("Дипломы")?"ДИПЛОМ":t.category.equals("Грамоты")?"ГРАМОТА":"СЕРТИФИКАТ",7,t.accent,true); heading.setGravity(Gravity.CENTER); art.addView(heading);
-        TextView line=txt("ИМЯ УЧАСТНИКА",7,ink,true); line.setGravity(Gravity.CENTER); line.setPadding(0,dp(3),0,0); art.addView(line);
-        View rule=new View(this); rule.setBackgroundColor(t.accent); LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(dp(48),dp(1)); rp.topMargin=dp(3); art.addView(rule,rp);
+        frame.addView(new CertificateArtwork(this,t),new FrameLayout.LayoutParams(-1,-1));
+    }
+    // Галерея и PDF используют одну функцию отрисовки, поэтому превью совпадает с результатом.
+    private class CertificateArtwork extends View {
+        private final Template template; private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG|Paint.FILTER_BITMAP_FLAG);
+        CertificateArtwork(Context context,Template t){super(context);template=t;}
+        @Override protected void onDraw(Canvas canvas){
+            super.onDraw(canvas);
+            float scale=Math.min(getWidth()/842f,getHeight()/595f);
+            float dx=(getWidth()-842f*scale)/2f,dy=(getHeight()-595f*scale)/2f;
+            canvas.save();canvas.translate(dx,dy);canvas.scale(scale,scale);
+            drawCertificate(canvas,paint,template,"ИМЯ УЧАСТНИКА","Название мероприятия","12.12.2026","Организатор",1,true);
+            canvas.restore();
+        }
+    }
+    private void drawCertificate(Canvas c,Paint p,Template t,String person,String title,String d,String org,int num,boolean preview){
+        drawDesign(c,p,t);
+        p.setTextAlign(Paint.Align.CENTER);p.setTypeface(Typeface.create("serif",Typeface.BOLD));p.setColor(t.accent);p.setTextSize(17);
+        c.drawText(t.category.equals("Дипломы")?"ДИПЛОМ":t.category.equals("Грамоты")?"ПОЧЁТНАЯ ГРАМОТА":"СЕРТИФИКАТ",421,132,p);
+        p.setColor(ink);p.setTypeface(Typeface.create("serif",Typeface.NORMAL));p.setTextSize(21);c.drawText("настоящим подтверждается, что",421,205,p);
+        p.setTypeface(Typeface.create("serif",Typeface.BOLD));p.setTextSize(preview?29:34);drawFit(c,person,421,285,690,p,preview?29:34,18);
+        p.setTypeface(Typeface.create("sans-serif",Typeface.NORMAL));p.setTextSize(17);c.drawText("успешно принял(а) участие в мероприятии",421,350,p);
+        p.setTypeface(Typeface.create("serif",Typeface.BOLD));p.setTextSize(23);p.setColor(t.accent);drawFit(c,title,421,405,690,p,23,15);
+        p.setTypeface(Typeface.create("sans-serif",Typeface.NORMAL));p.setTextSize(14);p.setColor(muted);
+        c.drawText("Дата: "+d,250,480,p);c.drawText("№ "+String.format(Locale.US,"%05d",num),590,480,p);
+        p.setStrokeWidth(1);c.drawLine(90,515,300,515,p);c.drawLine(540,515,750,515,p);p.setTextSize(12);
+        c.drawText(org.isEmpty()?"Организатор":org,195,535,p);c.drawText("Подпись",645,535,p);
     }
     private void showTemplates(){
         ScrollView scroll=new ScrollView(this); LinearLayout list=new LinearLayout(this); list.setOrientation(1); list.setPadding(dp(10),dp(8),dp(10),dp(8)); scroll.addView(list);
@@ -230,20 +232,6 @@ public class MainActivity extends Activity {
             getPreferences(MODE_PRIVATE).edit().putString("save_tree_uri",u.toString()).apply();
             updateSaveLocation();
             toast("Папка сохранения выбрана");
-        }
-    }
-
-    private class PreviewPattern extends View {
-        private final Template t; private final Paint paint=new Paint(3);
-        PreviewPattern(Context context,Template template){super(context);t=template;}
-        @Override protected void onDraw(Canvas canvas){
-            super.onDraw(canvas);float w=getWidth(),h=getHeight();paint.setColor(t.accent);paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(1.2f);
-            canvas.drawRoundRect(5,5,w-5,h-5,7,7,paint);
-            if(t.style%4==0){for(int y=15;y<h;y+=24){canvas.drawCircle(13,y,5,paint);canvas.drawCircle(w-13,y,5,paint);}canvas.drawOval(w*.22f,h*.12f,w*.78f,h*.9f,paint);}
-            else if(t.style%4==1){for(int x=15;x<w;x+=22){canvas.drawCircle(x,12,3,paint);canvas.drawCircle(x,h-12,3,paint);}}
-            else if(t.style%4==2){for(int k=0;k<8;k++){double a=k*Math.PI/4;canvas.drawCircle((float)(w/2+Math.cos(a)*w*.36),(float)(h/2+Math.sin(a)*h*.34),5,paint);}}
-            else{for(int x=12;x<w-12;x+=25){canvas.drawLine(x,8,x+12,20,paint);canvas.drawLine(x+12,20,x+24,8,paint);}}
-            paint.setStyle(Paint.Style.FILL);
         }
     }
 
@@ -452,17 +440,10 @@ public class MainActivity extends Activity {
         Bitmap bg=null;int pageW=842,pageH=595;
         if(selected.uri!=null){bg=loadTemplate(selected.uri);if(bg!=null&&bg.getWidth()>0&&bg.getHeight()>0)pageH=Math.max(1,Math.round(pageW*(float)bg.getHeight()/bg.getWidth()));}
         PdfDocument doc=new PdfDocument();PdfDocument.Page page=doc.startPage(new PdfDocument.PageInfo.Builder(pageW,pageH,1).create());Canvas c=page.getCanvas();Paint p=new Paint(3);
-        if(selected.uri!=null){if(bg!=null){c.drawBitmap(bg,null,new Rect(0,0,pageW,pageH),p);bg.recycle();}else drawDesign(c,p,selected);}else drawDesign(c,p,selected);
-        if(selected.uri!=null){c.save();c.scale(pageW/842f,pageH/595f);drawCustomFields(c,p,selected,person,title,d,org,num);c.restore();}
-        else{
-            p.setTextAlign(Paint.Align.CENTER);p.setTypeface(Typeface.create("serif",Typeface.BOLD));p.setColor(selected.accent);p.setTextSize(17);c.drawText(selected.category.equals("Дипломы")?"ДИПЛОМ":selected.category.equals("Грамоты")?"ПОЧЁТНАЯ ГРАМОТА":"СЕРТИФИКАТ",421,132,p);
-            p.setColor(ink);p.setTypeface(Typeface.create("serif",0));p.setTextSize(23);c.drawText("настоящим подтверждается, что",421,205,p);
-            p.setTypeface(Typeface.create("serif",Typeface.BOLD));p.setTextSize(34);drawFit(c,person,421,285,690,p,34,18);
-            p.setTypeface(Typeface.create("sans-serif",0));p.setTextSize(18);c.drawText(selected.style==20?"успешно завершила профессиональное обучение":"успешно принял(а) участие в мероприятии",421,350,p);
-            p.setTypeface(Typeface.create("serif",Typeface.BOLD));p.setTextSize(25);p.setColor(selected.accent);drawFit(c,title,421,405,690,p,25,15);
-            p.setTypeface(Typeface.create("sans-serif",0));p.setTextSize(14);p.setColor(muted);c.drawText("Дата: "+d,250,480,p);c.drawText("№ "+String.format(Locale.US,"%05d",num),590,480,p);
-            p.setStrokeWidth(1);c.drawLine(90,515,300,515,p);c.drawLine(540,515,750,515,p);p.setTextSize(12);c.drawText(org.isEmpty()?"Организатор":org,195,535,p);c.drawText("Подпись",645,535,p);
-        }
+        if(selected.uri!=null){
+            if(bg!=null){c.drawBitmap(bg,null,new Rect(0,0,pageW,pageH),p);bg.recycle();}else drawDesign(c,p,selected);
+            c.save();c.scale(pageW/842f,pageH/595f);drawCustomFields(c,p,selected,person,title,d,org,num);c.restore();
+        }else drawCertificate(c,p,selected,person,title,d,org,num,false);
         doc.finishPage(page);ByteArrayOutputStream out=new ByteArrayOutputStream();doc.writeTo(out);doc.close();return out.toByteArray();
     }
 
