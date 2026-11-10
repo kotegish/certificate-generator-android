@@ -1,0 +1,146 @@
+[
+  {
+    "file": "01_royal_ruby.jpg",
+    "title": "Королевский рубин",
+    "description": "Бордовый бархат, корона, золотой орнамент",
+    "format": "JPEG",
+    "width": 1684,
+    "height": 1123,
+    "text_layer": "separate"
+  },
+  {
+    "file": "02_royal_sapphire.jpg",
+    "title": "Королевский сапфир",
+    "description": "Синий бархат, корона и лавровые ветви",
+    "format": "JPEG",
+    "width": 1684,
+    "height": 1123,
+    "text_layer": "separate"
+  },
+  {
+    "file": "03_imperial_eagle.jpg",
+    "title": "Императорский герб",
+    "description": "Двуглавый орёл и золочёная рамка",
+    "format": "JPEG",
+    "width": 1684,
+    "height": 1123,
+    "text_layer": "separate"
+  },
+  {
+    "file": "04_rose_garden.jpg",
+    "title": "Розовый сад",
+    "description": "Розы и нежная золотая филигрань",
+    "format": "JPEG",
+    "width": 1684,
+    "height": 1123,
+    "text_layer": "separate"
+  },
+  {
+    "file": "05_emerald_laurel.jpg",
+    "title": "Изумрудный венок",
+    "description": "Изумрудный фон и лавровый венок",
+    "format": "JPEG",
+    "width": 1684,
+    "height": 1123,
+    "text_layer": "separate"
+  },
+  {
+    "file": "06_marble_columns.jpg",
+    "title": "Мраморные колонны",
+    "description": "Классические колонны и золотая резьба",
+    "format": "JPEG",
+    "width": 1684,
+    "height": 1123,
+    "text_layer": "separate"
+  },
+  {
+    "file": "07_blue_laurel.jpg",
+    "title": "Сапфировая награда",
+    "description": "Синий бархат и лавровый медальон",
+    "format": "JPEG",
+    "width": 1684,
+    "height": 1123,
+    "text_layer": "separate"
+  },
+  {
+    "file": "08_black_artdeco.jpg",
+    "title": "Чёрный арт-деко",
+    "description": "Чёрная фактура и геометрическое золото",
+    "format": "JPEG",
+    "width": 1684,
+    "height": 1123,
+    "text_layer": "separate"
+  },
+  {
+    "file": "09_pink_floral.jpg",
+    "title": "Пудровые цветы",
+    "description": "Розовые цветы и светлый пергамент",
+    "format": "JPEG",
+    "width": 1684,
+    "height": 1123,
+    "text_layer": "separate"
+  },
+  {
+    "file": "10_vintage_scroll.jpg",
+    "title": "Старинный свиток",
+    "description": "Пергамент, перо и сургучная печать",
+    "format": "JPEG",
+    "width": 1684,
+    "height": 1123,
+    "text_layer": "separate"
+  },
+  {
+    "file": "11_green_crown.jpg",
+    "title": "Изумрудная корона",
+    "description": "Зелёный мрамор и золотая корона",
+    "format": "JPEG",
+    "width": 1684,
+    "height": 1123,
+    "text_layer": "separate"
+  },
+  {
+    "file": "12_ivory_pearl.jpg",
+    "title": "Жемчужная классика",
+    "description": "Светлый жемчужный фон и золотая вязь",
+    "format": "JPEG",
+    "width": 1684,
+    "height": 1123,
+    "text_layer": "separate"
+  },
+  {
+    "file": "13_violet_flourish.jpg",
+    "title": "Фиолетовая флора",
+    "description": "Фиолетовые цветы и золотой орнамент",
+    "format": "JPEG",
+    "width": 1684,
+    "height": 1123,
+    "text_layer": "separate"
+  },
+  {
+    "file": "14_classic_gold.jpg",
+    "title": "Золотая классика",
+    "description": "Сдержанная кремовая композиция",
+    "format": "JPEG",
+    "width": 1684,
+    "height": 1123,
+    "text_layer": "separate"
+  },
+  {
+    "file": "15_burgundy_velvet.jpg",
+    "title": "Бордовый бархат",
+    "description": "Глубокий бордовый фон и золотая печать",
+    "format": "JPEG",
+    "width": 1684,
+    "height": 1123,
+    "text_layer": "separate"
+  },
+  {
+    "file": "16_navy_medallion.jpg",
+    "title": "Синий медальон",
+    "description": "Тёмно-синий фон и золотой герб",
+    "format": "JPEG",
+    "width": 1684,
+    "height": 1123,
+    "text_layer": "separate"
+  }
+]
