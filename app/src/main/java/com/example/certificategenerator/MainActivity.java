@@ -145,13 +145,14 @@ public class MainActivity extends Activity {
         CertificateArtwork(Context context,Template t){super(context);template=t;}
         @Override protected void onDraw(Canvas canvas){
             super.onDraw(canvas);
-            float scale=Math.min(getWidth()/842f,getHeight()/595f);
-            float dx=(getWidth()-842f*scale)/2f,dy=(getHeight()-595f*scale)/2f;
+            Bitmap original=null;float pageH=595f;
+            if(template.uri!=null){try{original=loadTemplate(template.uri);if(original!=null&&original.getWidth()>0)pageH=842f*original.getHeight()/original.getWidth();}catch(Exception ignored){}}
+            float scale=Math.min(getWidth()/842f,getHeight()/pageH);
+            float dx=(getWidth()-842f*scale)/2f,dy=(getHeight()-pageH*scale)/2f;
             canvas.save();canvas.translate(dx,dy);canvas.scale(scale,scale);
             if(template.uri!=null){
-                try{Bitmap original=loadTemplate(template.uri);if(original!=null){canvas.drawBitmap(original,null,new Rect(0,0,842,595),paint);original.recycle();}}
-                catch(Exception ignored){}
-                drawCustomFields(canvas,paint,template,"ИМЯ УЧАСТНИКА","Название мероприятия","12.12.2026","Организатор",1);
+                if(original!=null){canvas.drawBitmap(original,null,new RectF(0,0,842,pageH),paint);original.recycle();}
+                drawCustomFields(canvas,paint,template,"ИМЯ УЧАСТНИКА","Название мероприятия","12.12.2026","Организатор",1,842,pageH);
             }else drawCertificate(canvas,paint,template,"ИМЯ УЧАСТНИКА","Название мероприятия","12.12.2026","Организатор",1,true);
             canvas.restore();
         }
@@ -446,7 +447,7 @@ public class MainActivity extends Activity {
         PdfDocument doc=new PdfDocument();PdfDocument.Page page=doc.startPage(new PdfDocument.PageInfo.Builder(pageW,pageH,1).create());Canvas c=page.getCanvas();Paint p=new Paint(3);
         if(selected.uri!=null){
             if(bg!=null){c.drawBitmap(bg,null,new Rect(0,0,pageW,pageH),p);bg.recycle();}else drawDesign(c,p,selected);
-            c.save();c.scale(pageW/842f,pageH/595f);drawCustomFields(c,p,selected,person,title,d,org,num);c.restore();
+            c.save();c.scale(pageW/842f,pageH/595f);drawCustomFields(c,p,selected,person,title,d,org,num,pageW,pageH);c.restore();
         }else drawCertificate(c,p,selected,person,title,d,org,num,false);
         doc.finishPage(page);ByteArrayOutputStream out=new ByteArrayOutputStream();doc.writeTo(out);doc.close();return out.toByteArray();
     }
@@ -455,12 +456,16 @@ public class MainActivity extends Activity {
         switch(f.key){case "person":return person;case "title":return title;case "date":return d;case "org":return org;case "number":return String.format(Locale.US,"%05d",num);default:return f.label;}
     }
     private void drawCustomFields(Canvas c,Paint p,Template t,String person,String title,String d,String org,int num){
+        drawCustomFields(c,p,t,person,title,d,org,num,842,595);
+    }
+    private void drawCustomFields(Canvas c,Paint p,Template t,String person,String title,String d,String org,int num,float pageW,float pageH){
+        float fontScale=pageH/595f;
         for(TemplateField f:t.fields){
             String value=fieldValue(f,person,title,d,org,num);
             p.setColor(Color.rgb(35,42,52));p.setTextAlign(Paint.Align.CENTER);
             p.setTypeface(Typeface.create("serif",f.key.equals("person")?Typeface.BOLD:Typeface.NORMAL));
-            p.setTextSize(f.size);
-            drawFit(c,value,842*f.x,595*f.y,700,p,f.size,Math.max(10,f.size*.55f));
+            float size=f.size*fontScale;p.setTextSize(size);
+            drawFit(c,value,pageW*f.x,pageH*f.y,pageW*.84f,p,size,Math.max(8,size*.55f));
         }
     }
     private void saveCustomTemplateList(){
