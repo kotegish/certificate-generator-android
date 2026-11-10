@@ -118,7 +118,10 @@ public class MainActivity extends Activity {
     @Override protected void onActivityResult(int req,int res,Intent data){
         super.onActivityResult(req,res,data); if(res!=RESULT_OK||data==null)return;
         Uri u=data.getData(); if(u==null)return;
-        try{getContentResolver().takePersistableUriPermission(u,Intent.FLAG_GRANT_READ_URI_PERMISSION);}catch(Exception ignored){}
+        try{
+            int grantFlags=data.getFlags()&(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            getContentResolver().takePersistableUriPermission(u,grantFlags);
+        }catch(Exception ignored){}
         if(req==PICK_CSV){csv=u;try{people.clear();people.addAll(readNames(u));csvStatus.setText("✓ Загружено участников: "+people.size());}catch(Exception e){csvStatus.setText("Не удалось прочитать CSV: "+e.getMessage());}}
         if(req==PICK_TEMPLATE){
             String mime=getContentResolver().getType(u); String n="Мой шаблон "+(templates.size()-3);
