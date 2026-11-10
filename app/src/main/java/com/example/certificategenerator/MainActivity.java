@@ -31,6 +31,8 @@ public class MainActivity extends Activity {
     private TextView csvStatus,selectedLabel,saveLocation;
     private Uri saveTree;
     private Uri csv;
+    private BroadcastReceiver updateReceiver;
+    private long updateDownloadId=-1;
     private Template selected;
     private LinearLayout root;
     private int ink=Color.rgb(31,43,62), muted=Color.rgb(111,122,139), accent=Color.rgb(72,91,176);
@@ -61,6 +63,7 @@ public class MainActivity extends Activity {
         String savedTree=getPreferences(MODE_PRIVATE).getString("save_tree_uri",null);
         if(savedTree!=null)try{saveTree=Uri.parse(savedTree);}catch(Exception ignored){}
         build();
+        registerUpdateReceiver();
     }
 
     private void build(){
@@ -262,10 +265,81 @@ public class MainActivity extends Activity {
                 if(normalizeVersion(v).equals(normalizeVersion(currentVersion()))){
                     new AlertDialog.Builder(this).setTitle("Обновления не найдены").setMessage("Установлена последняя версия: "+currentVersion()).setPositiveButton("Понятно",null).show();
                 }else{
-                    new AlertDialog.Builder(this).setTitle("Доступно обновление").setMessage("Новая версия: "+v+"\\nУстановлена: "+currentVersion()+"\\n\\nСкачать APK?").setPositiveButton("Скачать",(d,w)->openUpdateUrl(apk)).setNegativeButton("Позже",null).show();
+                    new AlertDialog.Builder(this).setTitle("Доступно обновление").setMessage("Новая версия: "+v+"\\nУстановлена: "+currentVersion()+"\\n\\nСкачать APK?").setPositiveButton("Скачать",(d,w)->downloadUpdate(apk)).setNegativeButton("Позже",null).show();
                 }
             });
         }).start();
+    }
+    private void registerUpdateReceiver(){
+        updateReceiver=new BroadcastReceiver(){
+            @Override public void onReceive(Context context,Intent intent){
+                if(!DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(intent.getAction()))return;
+                long id=intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID,-1);
+                if(id!=updateDownloadId)return;
+                DownloadManager manager=(DownloadManager)getSystemService(DOWNLOAD_SERVICE);
+                DownloadManager.Query query=new DownloadManager.Query().setFilterById(id);
+                try(Cursor cursor=manager.query(query)){
+                    if(cursor!=null&&cursor.moveToFirst()){
+                        int status=cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
+                        if(status==DownloadManager.STATUS_SUCCESSFUL){
+                            Uri apk=manager.getUriForDownloadedFile(id);
+                            if(apk!=null){getPreferences(MODE_PRIVATE).edit().putString("pending_update_uri",apk.toString()).apply();installPendingUpdate();}
+                            else toast("Не удалось получить загруженный APK");
+                        }else{
+                            int reason=cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON));
+                            toast("Загрузка обновления не удалась. Код: "+reason);
+                        }
+                    }
+                }catch(Exception e){toast("Ошибка загрузки обновления: "+e.getMessage());}
+            }
+        };
+        IntentFilter filter=new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+        if(android.os.Build.VERSION.SDK_INT>=33)registerReceiver(updateReceiver,filter,Context.RECEIVER_NOT_EXPORTED);
+        else registerReceiver(updateReceiver,filter);
+    }
+    @Override protected void onDestroy(){
+        if(updateReceiver!=null)try{unregisterReceiver(updateReceiver);}catch(Exception ignored){}
+        super.onDestroy();
+    }
+    @Override protected void onResume(){
+        super.onResume();
+        String pending=getPreferences(MODE_PRIVATE).getString("pending_update_uri",null);
+        if(pending!=null&&android.os.Build.VERSION.SDK_INT>=26&&getPackageManager().canRequestPackageInstalls())installPendingUpdate();
+    }
+    private void downloadUpdate(String url){
+        try{
+            DownloadManager manager=(DownloadManager)getSystemService(DOWNLOAD_SERVICE);
+            DownloadManager.Request request=new DownloadManager.Request(Uri.parse(url));
+            request.setTitle("Обновление SoloDefStudio");
+            request.setDescription("Загрузка новой версии приложения");
+            request.setMimeType("application/vnd.android.package-archive");
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            request.setDestinationInExternalFilesDir(this,android.os.Environment.DIRECTORY_DOWNLOADS,"SoloDefStudio-update.apk");
+            updateDownloadId=manager.enqueue(request);
+            getPreferences(MODE_PRIVATE).edit().putLong("update_download_id",updateDownloadId).apply();
+            toast("Загрузка обновления началась. Уведомление покажет её завершение.");
+        }catch(Exception e){toast("Не удалось начать загрузку: "+e.getMessage());}
+    }
+    private void installPendingUpdate(){
+        String value=getPreferences(MODE_PRIVATE).getString("pending_update_uri",null);
+        if(value==null)return;
+        try{
+            if(android.os.Build.VERSION.SDK_INT>=26&&!getPackageManager().canRequestPackageInstalls()){
+                new AlertDialog.Builder(this).setTitle("Разрешите установку обновления")
+                    .setMessage("Android просит разрешить установку обновлений для этого приложения. Включите разрешение и вернитесь сюда.")
+                    .setPositiveButton("Открыть настройки",(d,w)->{
+                        Intent settings=new Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,Uri.parse("package:"+getPackageName()));
+                        startActivity(settings);
+                    }).setNegativeButton("Позже",null).show();
+                return;
+            }
+            Uri apk=Uri.parse(value);
+            Intent install=new Intent(Intent.ACTION_VIEW);
+            install.setDataAndType(apk,"application/vnd.android.package-archive");
+            install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(install);
+            getPreferences(MODE_PRIVATE).edit().remove("pending_update_uri").apply();
+        }catch(Exception e){toast("Не удалось открыть установщик: "+e.getMessage());}
     }
     private String normalizeVersion(String version){return version==null?"":version.trim().toLowerCase(Locale.ROOT).replaceFirst("^v","");}
     private void openUpdateUrl(String url){
