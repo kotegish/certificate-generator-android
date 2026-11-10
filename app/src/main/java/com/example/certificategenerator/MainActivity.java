@@ -76,6 +76,7 @@ public class MainActivity extends Activity {
         templates.add(new Template("Лавровая симметрия","Дипломы",Color.rgb(243,246,235),Color.rgb(99,119,62),24));
         templates.add(new Template("Ажурное золото","Грамоты",Color.rgb(251,246,235),Color.rgb(172,127,56),25));
         templates.add(new Template("Пудровые вензеля","Lash Master",Color.rgb(252,240,242),Color.rgb(174,112,131),26));
+        restoreCustomTemplates();
         selected=templates.get(0);
         String savedTree=getPreferences(MODE_PRIVATE).getString("save_tree_uri",null);
         if(savedTree!=null)try{saveTree=Uri.parse(savedTree);}catch(Exception ignored){}
@@ -214,7 +215,7 @@ public class MainActivity extends Activity {
             t.fields.add(new TemplateField("title","Название курса",.50f,.64f,22));
             t.fields.add(new TemplateField("date","Дата",.30f,.82f,16));
             t.fields.add(new TemplateField("org","Организатор / подпись",.74f,.90f,14));
-            templates.add(t); selected=t; updateSelected(); saveCustomTemplate(t); showFieldEditor(t);
+            templates.add(t); selected=t; updateSelected(); saveCustomTemplate(t); saveCustomTemplateList(); showFieldEditor(t);
         }
         if(req==PICK_FOLDER){
             saveTree=u;
@@ -467,6 +468,24 @@ public class MainActivity extends Activity {
             p.setTypeface(Typeface.create("serif",f.key.equals("person")?Typeface.BOLD:Typeface.NORMAL));
             p.setTextSize(f.size);
             drawFit(c,value,842*f.x,595*f.y,700,p,f.size,Math.max(10,f.size*.55f));
+        }
+    }
+    private void saveCustomTemplateList(){
+        java.util.HashSet<String> uris=new java.util.HashSet<>();
+        for(Template t:templates)if(t.uri!=null)uris.add(t.uri.toString());
+        getPreferences(MODE_PRIVATE).edit().putStringSet("custom_template_uris",uris).apply();
+    }
+    private void restoreCustomTemplates(){
+        java.util.Set<String> uris=getPreferences(MODE_PRIVATE).getStringSet("custom_template_uris",null);
+        if(uris==null)return;
+        for(String value:uris){
+            try{
+                Uri uri=Uri.parse(value);
+                Template t=new Template("Мой шаблон "+(templates.size()-2),"Мои шаблоны",Color.rgb(246,245,241),Color.rgb(104,91,142),0);t.uri=uri;
+                String raw=getPreferences(MODE_PRIVATE).getString("custom_fields_"+value,null);
+                if(raw!=null){JSONArray a=new JSONArray(raw);for(int i=0;i<a.length();i++){JSONObject o=a.getJSONObject(i);t.fields.add(new TemplateField(o.optString("key"),o.optString("label"),(float)o.optDouble("x",.5),(float)o.optDouble("y",.5),(float)o.optDouble("size",18)));}}
+                templates.add(t);
+            }catch(Exception ignored){}
         }
     }
     private void saveCustomTemplate(Template t){
