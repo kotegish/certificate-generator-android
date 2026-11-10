@@ -9,6 +9,7 @@ import android.graphics.pdf.PdfRenderer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
+import android.provider.DocumentsContract;
 import android.view.*;
 import android.widget.*;
 import java.io.*;
@@ -17,11 +18,12 @@ import java.util.*;
 import java.util.zip.*;
 
 public class MainActivity extends Activity {
-    private static final int PICK_CSV=41, PICK_TEMPLATE=42;
+    private static final int PICK_CSV=41, PICK_TEMPLATE=42, PICK_FOLDER=43;
     private final ArrayList<String> people=new ArrayList<>();
     private final ArrayList<Template> templates=new ArrayList<>();
     private EditText event,date,issuer;
-    private TextView csvStatus,selectedLabel;
+    private TextView csvStatus,selectedLabel,saveLocation;
+    private Uri saveTree;
     private Uri csv;
     private Template selected;
     private LinearLayout root;
@@ -42,6 +44,8 @@ public class MainActivity extends Activity {
         templates.add(new Template("Современный","Сертификаты",Color.rgb(239,248,246),Color.rgb(40,125,111)));
         templates.add(new Template("Минимализм","Грамоты",Color.rgb(248,247,245),Color.rgb(72,78,91)));
         selected=templates.get(0);
+        String savedTree=getPreferences(MODE_PRIVATE).getString("save_tree_uri",null);
+        if(savedTree!=null)try{saveTree=Uri.parse(savedTree);}catch(Exception ignored){}
         build();
     }
 
@@ -77,7 +81,12 @@ public class MainActivity extends Activity {
         addInput(data,"НАЗВАНИЕ",event); addInput(data,"ДАТА",date); addInput(data,"ОРГАНИЗАТОР",issuer);
 
         TextView s3=section("ШАГ 3 · РЕЗУЛЬТАТ"); root.addView(s3,params(-1,-2,22));
-        TextView note=txt("Для каждого участника будет создан отдельный PDF. Все файлы также соберём в один ZIP-архив.",13,muted,false); root.addView(note);
+        LinearLayout destination=card(); destination.setOrientation(1); destination.setPadding(dp(15),dp(13),dp(15),dp(13)); root.addView(destination,params(-1,-2,12));
+        TextView destinationTitle=txt("ПАПКА СОХРАНЕНИЯ",10,muted,true); destination.addView(destinationTitle);
+        saveLocation=txt("",12,ink,false); saveLocation.setPadding(0,dp(6),0,dp(8)); destination.addView(saveLocation);
+        Button folderBtn=button("Выбрать папку на телефоне",Color.rgb(235,238,250)); folderBtn.setTextColor(accent); destination.addView(folderBtn); folderBtn.setOnClickListener(v->chooseSaveFolder());
+        updateSaveLocation();
+        TextView note=txt("Для каждого участника будет создан отдельный PDF. Все файлы также соберём в один ZIP-архив.",13,muted,false); root.addView(note,params(-1,-2,12));
         Button make=button("Создать сертификаты  →",Color.rgb(39,53,83)); make.setTextColor(Color.WHITE); root.addView(make,params(-1,dp(54),14)); make.setOnClickListener(v->generate());
         TextView footer=txt("Ваши макеты и документы остаются на устройстве.",11,muted,false); footer.setGravity(Gravity.CENTER); footer.setPadding(0,dp(18),0,0); root.addView(footer);
         updateSelected();
@@ -116,6 +125,12 @@ public class MainActivity extends Activity {
             Template t=new Template(n,"Мои шаблоны",Color.rgb(246,245,241),Color.rgb(104,91,142)); t.uri=u; templates.add(t); selected=t; updateSelected();
             new AlertDialog.Builder(this).setTitle("Шаблон добавлен").setMessage("Макет добавлен в галерею. Он будет использоваться как фон сертификата.").setPositiveButton("Отлично",null).show();
         }
+        if(req==PICK_FOLDER){
+            saveTree=u;
+            getPreferences(MODE_PRIVATE).edit().putString("save_tree_uri",u.toString()).apply();
+            updateSaveLocation();
+            toast("Папка сохранения выбрана");
+        }
     }
 
     private List<String> readNames(Uri uri)throws Exception{
@@ -132,14 +147,54 @@ public class MainActivity extends Activity {
         String title=event.getText().toString().trim(),d=date.getText().toString().trim(),org=issuer.getText().toString().trim();
         if(title.isEmpty()||d.isEmpty()){toast("Заполните название и дату");return;}
         try{
-            File dir=new File(getExternalFilesDir(null),"Certificates");if(!dir.exists())dir.mkdirs();File zip=new File(dir,"certificates_"+System.currentTimeMillis()+".zip");
-            try(ZipOutputStream zos=new ZipOutputStream(new FileOutputStream(zip))){
-                for(int n=0;n<people.size();n++){String fn=String.format(Locale.US,"%03d_%s.pdf",n+1,safe(people.get(n)));byte[] bytes=pdf(people.get(n),title,d,org,n+1);
-                    try(FileOutputStream f=new FileOutputStream(new File(dir,fn))){f.write(bytes);}zos.putNextEntry(new ZipEntry(fn));zos.write(bytes);zos.closeEntry();}
+            if(saveTree!=null){
+                saveCertificatesToTree(title,d,org);
+                new AlertDialog.Builder(this).setTitle("Готово!").setMessage("Создано документов: "+people.size()+"\\n\\nPDF и ZIP сохранены в выбранную папку, в новой папке с датой и временем.").setPositiveButton("Понятно",null).show();
+            }else{
+                File dir=new File(getExternalFilesDir(null),"Certificates");if(!dir.exists())dir.mkdirs();File zip=new File(dir,"certificates_"+System.currentTimeMillis()+".zip");
+                try(ZipOutputStream zos=new ZipOutputStream(new FileOutputStream(zip))){
+                    for(int n=0;n<people.size();n++){String fn=String.format(Locale.US,"%03d_%s.pdf",n+1,safe(people.get(n)));byte[] bytes=pdf(people.get(n),title,d,org,n+1);
+                        try(FileOutputStream f=new FileOutputStream(new File(dir,fn))){f.write(bytes);}zos.putNextEntry(new ZipEntry(fn));zos.write(bytes);zos.closeEntry();}
+                }
+                new AlertDialog.Builder(this).setTitle("Готово!").setMessage("Создано документов: "+people.size()+"\\n\\nПапка: "+dir.getAbsolutePath()+"\\nZIP: "+zip.getName()).setPositiveButton("Понятно",null).show();
             }
-            new AlertDialog.Builder(this).setTitle("Готово!").setMessage("Создано документов: "+people.size()+"\n\nПапка: "+dir.getAbsolutePath()+"\nZIP: "+zip.getName()).setPositiveButton("Понятно",null).show();
-        }catch(Exception e){toast("Ошибка: "+e.getMessage());}
+        }catch(Exception e){toast("Ошибка сохранения: "+e.getMessage());}
     }
+    private void chooseSaveFolder(){
+        Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION|Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+        startActivityForResult(i,PICK_FOLDER);
+    }
+    private void updateSaveLocation(){
+        if(saveLocation==null)return;
+        if(saveTree==null)saveLocation.setText("По умолчанию: папка приложения Certificates во внутреннем хранилище Android");
+        else saveLocation.setText("Выбрана папка телефона. PDF и ZIP будут сохраняться туда.");
+    }
+    private Uri saveCertificatesToTree(String title,String d,String org)throws Exception{
+        String folderName="Certificates_"+new java.text.SimpleDateFormat("yyyyMMdd_HHmmss",Locale.US).format(new Date());
+        String rootId=DocumentsContract.getTreeDocumentId(saveTree);
+        Uri rootDoc=DocumentsContract.buildDocumentUriUsingTree(saveTree,rootId);
+        Uri runFolder=DocumentsContract.createDocument(getContentResolver(),rootDoc,DocumentsContract.Document.MIME_TYPE_DIR,folderName);
+        if(runFolder==null)throw new IOException("Не удалось создать папку в выбранном месте");
+        Uri zipUri=DocumentsContract.createDocument(getContentResolver(),runFolder,"application/zip","certificates.zip");
+        if(zipUri==null)throw new IOException("Не удалось создать ZIP-архив");
+        OutputStream raw=getContentResolver().openOutputStream(zipUri);
+        if(raw==null)throw new IOException("Не удалось открыть ZIP для записи");
+        try(ZipOutputStream zos=new ZipOutputStream(raw)){
+            for(int n=0;n<people.size();n++){
+                String fn=String.format(Locale.US,"%03d_%s.pdf",n+1,safe(people.get(n)));
+                byte[] bytes=pdf(people.get(n),title,d,org,n+1);
+                Uri pdfUri=DocumentsContract.createDocument(getContentResolver(),runFolder,"application/pdf",fn);
+                if(pdfUri==null)throw new IOException("Не удалось создать файл "+fn);
+                OutputStream out=getContentResolver().openOutputStream(pdfUri);
+                if(out==null)throw new IOException("Не удалось записать "+fn);
+                try(OutputStream fileOut=out){fileOut.write(bytes);}
+                zos.putNextEntry(new ZipEntry(fn));zos.write(bytes);zos.closeEntry();
+            }
+        }
+        return runFolder;
+    }
+
     private byte[] pdf(String person,String title,String d,String org,int num)throws Exception{
         PdfDocument doc=new PdfDocument();PdfDocument.Page page=doc.startPage(new PdfDocument.PageInfo.Builder(842,595,1).create());Canvas c=page.getCanvas();Paint p=new Paint(3);
         if(selected.uri!=null){Bitmap bg=loadTemplate(selected.uri);if(bg!=null){c.drawBitmap(bg,null,new Rect(0,0,842,595),p);bg.recycle();}else drawDesign(c,p,selected);}
