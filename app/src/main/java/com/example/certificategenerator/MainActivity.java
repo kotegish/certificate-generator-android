@@ -76,6 +76,14 @@ public class MainActivity extends Activity {
         templates.add(new Template("Лавровая симметрия","Дипломы",Color.rgb(243,246,235),Color.rgb(99,119,62),24));
         templates.add(new Template("Ажурное золото","Грамоты",Color.rgb(251,246,235),Color.rgb(172,127,56),25));
         templates.add(new Template("Пудровые вензеля","Lash Master",Color.rgb(252,240,242),Color.rgb(174,112,131),26));
+        templates.add(new Template("Золотая классика · Премиум","Сертификаты",Color.rgb(250,247,239),Color.rgb(174,133,61),27));
+        templates.add(new Template("Королевский орнамент · Премиум","Дипломы",Color.rgb(248,243,231),Color.rgb(130,91,43),28));
+        templates.add(new Template("Изумрудная элегантность","Сертификаты",Color.rgb(237,245,239),Color.rgb(43,112,82),29));
+        templates.add(new Template("Синий премиум","Дипломы",Color.rgb(239,244,251),Color.rgb(48,83,145),30));
+        templates.add(new Template("Лавровая награда","Грамоты",Color.rgb(245,247,237),Color.rgb(105,126,69),31));
+        templates.add(new Template("Розовое золото · Премиум","Сертификаты",Color.rgb(252,243,241),Color.rgb(181,119,112),32));
+        templates.add(new Template("Арт-деко · Премиум","Дипломы",Color.rgb(30,37,53),Color.rgb(222,184,104),33));
+        templates.add(new Template("Современный минимализм","Сертификаты",Color.rgb(250,250,248),Color.rgb(77,91,111),34));
         restoreCustomTemplates();
         selected=templates.get(0);
         String savedTree=getPreferences(MODE_PRIVATE).getString("save_tree_uri",null);
@@ -621,6 +629,43 @@ public class MainActivity extends Activity {
                 p.setStrokeWidth(3);c.drawRect(35,35,807,560,p);c.drawRect(51,51,791,544,p);
                 for(int k=0;k<8;k++){float x=90+k*95;c.drawLine(x,38,x+28,66,p);c.drawLine(x+28,66,x+56,38,p);}
                 c.drawLine(90,525,752,525,p);
+            }
+        }
+
+        if(t.style>=27){
+            p.setStyle(Paint.Style.STROKE);p.setColor(t.accent);p.setStrokeCap(Paint.Cap.ROUND);
+            if(t.style==27){
+                p.setStrokeWidth(3);c.drawRect(30,30,812,565,p);p.setStrokeWidth(1.2f);c.drawRect(43,43,799,552,p);
+                for(int x:new int[]{58,784})for(int y:new int[]{58,537}){c.drawCircle(x,y,27,p);c.drawCircle(x,y,17,p);c.drawCircle(x,y,7,p);}
+                p.setStrokeWidth(2);c.drawLine(180,82,662,82,p);c.drawLine(180,513,662,513,p);
+            }else if(t.style==28){
+                p.setStrokeWidth(2.5f);c.drawRoundRect(42,42,800,553,34,34,p);
+                for(int x:new int[]{70,772})for(int y:new int[]{70,525}){Path q=new Path();q.moveTo(x,y+42);q.cubicTo(x-8,y+8,x-42,y+8,x-42,y);q.cubicTo(x-8,y-8,x-8,y-42,x,y-42);c.drawPath(q,p);c.drawCircle(x,y,9,p);}
+                p.setStrokeWidth(1.2f);c.drawOval(170,48,672,547,p);
+            }else if(t.style==29){
+                p.setStrokeWidth(2.5f);c.drawRoundRect(38,38,804,557,26,26,p);
+                for(int k=0;k<10;k++){float y=92+k*45;c.drawCircle(66,y,5,p);c.drawCircle(776,y,5,p);}
+                p.setStrokeWidth(1.3f);c.drawOval(95,55,747,540,p);p.setStrokeWidth(2);c.drawLine(150,88,692,88,p);c.drawLine(150,507,692,507,p);
+            }else if(t.style==30){
+                p.setStrokeWidth(7);c.drawLine(48,48,48,547,p);c.drawLine(794,48,794,547,p);
+                p.setStrokeWidth(1.5f);c.drawRect(64,48,778,547,p);
+                for(int k=0;k<8;k++){float x=115+k*88;c.drawLine(x,48,x+28,76,p);c.drawLine(x+28,76,x+56,48,p);}
+                c.drawLine(180,105,662,105,p);c.drawLine(180,490,662,490,p);
+            }else if(t.style==31){
+                p.setStrokeWidth(2);c.drawRoundRect(42,42,800,553,24,24,p);
+                for(int side:new int[]{0,1}){c.save();if(side==1)c.scale(-1,1,421,297);Path leaf=new Path();leaf.moveTo(95,300);leaf.cubicTo(135,260,130,205,90,170);leaf.cubicTo(45,205,48,260,95,300);leaf.moveTo(95,300);leaf.cubicTo(145,315,165,365,150,405);leaf.cubicTo(105,390,85,345,95,300);c.drawPath(leaf,p);c.restore();}
+                p.setStrokeWidth(1.2f);c.drawOval(190,55,652,540,p);
+            }else if(t.style==32){
+                p.setStrokeWidth(2);c.drawRoundRect(42,42,800,553,30,30,p);
+                for(int x:new int[]{85,757})for(int y:new int[]{85,510}){c.drawCircle(x,y,22,p);c.drawCircle(x,y,12,p);}
+                p.setStrokeWidth(1.3f);c.drawOval(130,52,712,543,p);c.drawLine(250,90,592,90,p);c.drawLine(250,505,592,505,p);
+            }else if(t.style==33){
+                p.setStrokeWidth(5);c.drawRect(35,35,807,560,p);p.setStrokeWidth(1.4f);c.drawRect(52,52,790,543,p);
+                for(int x:new int[]{75,767})for(int y:new int[]{75,520}){c.drawLine(x-22,y,x,y-22,p);c.drawLine(x,y-22,x+22,y,p);c.drawLine(x+22,y,x,y+22,p);c.drawLine(x,y+22,x-22,y,p);}
+                p.setStrokeWidth(2);c.drawLine(180,92,662,92,p);c.drawLine(180,503,662,503,p);
+            }else{
+                p.setStrokeWidth(1.5f);c.drawRoundRect(48,48,794,547,12,12,p);c.drawLine(105,82,737,82,p);c.drawLine(105,513,737,513,p);
+                for(int x:new int[]{105,737})for(int y:new int[]{82,513})c.drawCircle(x,y,5,p);
             }
         }
         p.setStyle(Paint.Style.FILL);
