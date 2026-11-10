@@ -38,8 +38,13 @@ public class MainActivity extends Activity {
     private LinearLayout root, previewRow;
     private int ink=Color.rgb(31,43,62), muted=Color.rgb(111,122,139), accent=Color.rgb(72,91,176);
 
+    static class TemplateField {
+        String key,label; float x,y,size;
+        TemplateField(String k,String l,float px,float py,float sz){key=k;label=l;x=px;y=py;size=sz;}
+    }
     static class Template {
         String name,category; int color,accent,style; Uri uri;
+        ArrayList<TemplateField> fields=new ArrayList<>();
         Template(String n,String c,int col,int a,int st){name=n;category=c;color=col;accent=a;style=st;}
     }
 
@@ -203,9 +208,13 @@ public class MainActivity extends Activity {
         }catch(Exception ignored){}
         if(req==PICK_CSV){csv=u;try{people.clear();people.addAll(readNames(u));csvStatus.setText("✓ Загружено участников: "+people.size());}catch(Exception e){csvStatus.setText("Не удалось прочитать CSV: "+e.getMessage());}}
         if(req==PICK_TEMPLATE){
-            String mime=getContentResolver().getType(u); String n="Мой шаблон "+(templates.size()-3);
-            Template t=new Template(n,"Мои шаблоны",Color.rgb(246,245,241),Color.rgb(104,91,142),0); t.uri=u; templates.add(t); selected=t; updateSelected();
-            new AlertDialog.Builder(this).setTitle("Шаблон добавлен").setMessage("Макет добавлен в галерею. Он будет использоваться как фон сертификата.").setPositiveButton("Отлично",null).show();
+            String n="Мой шаблон "+(templates.size()-3);
+            Template t=new Template(n,"Мои шаблоны",Color.rgb(246,245,241),Color.rgb(104,91,142),0); t.uri=u;
+            t.fields.add(new TemplateField("person","Имя и фамилия",.50f,.48f,34));
+            t.fields.add(new TemplateField("title","Название курса",.50f,.64f,22));
+            t.fields.add(new TemplateField("date","Дата",.30f,.82f,16));
+            t.fields.add(new TemplateField("org","Организатор / подпись",.74f,.90f,14));
+            templates.add(t); selected=t; updateSelected(); saveCustomTemplate(t); showFieldEditor(t);
         }
         if(req==PICK_FOLDER){
             saveTree=u;
@@ -435,11 +444,7 @@ public class MainActivity extends Activity {
         if(selected.uri!=null){Bitmap bg=loadTemplate(selected.uri);if(bg!=null){c.drawBitmap(bg,null,new Rect(0,0,842,595),p);bg.recycle();}else drawDesign(c,p,selected);}
         else drawDesign(c,p,selected);
         if(selected.uri!=null){
-            p.setColor(Color.rgb(35,42,52));p.setTextAlign(Paint.Align.CENTER);p.setTypeface(Typeface.create("serif",Typeface.BOLD));p.setTextSize(25);
-            c.drawText("СЕРТИФИКАТ",421,145,p);p.setTypeface(Typeface.create("serif",Typeface.NORMAL));p.setTextSize(19);c.drawText("настоящим подтверждается, что",421,218,p);
-            p.setTypeface(Typeface.create("serif",Typeface.BOLD));p.setTextSize(34);drawFit(c,person,421,300,690,p,34,18);
-            p.setTypeface(Typeface.create("sans-serif",0));p.setTextSize(17);c.drawText("успешно принял(а) участие",421,355,p);p.setTypeface(Typeface.create("serif",Typeface.BOLD));p.setTextSize(23);drawFit(c,title,421,405,690,p,23,14);
-            p.setTypeface(Typeface.create("sans-serif",0));p.setTextSize(14);c.drawText(d+"     ·     № "+String.format(Locale.US,"%05d",num),421,485,p);c.drawText(org,421,530,p);
+            drawCustomFields(c,p,selected,person,title,d,org,num);
         }else{
             p.setTextAlign(Paint.Align.CENTER);p.setTypeface(Typeface.create("serif",Typeface.BOLD));p.setColor(selected.accent);p.setTextSize(17);c.drawText(selected.category.equals("Дипломы")?"ДИПЛОМ":selected.category.equals("Грамоты")?"ПОЧЁТНАЯ ГРАМОТА":"СЕРТИФИКАТ",421,132,p);
             p.setColor(ink);p.setTypeface(Typeface.create("serif",0));p.setTextSize(23);c.drawText("настоящим подтверждается, что",421,205,p);
@@ -451,6 +456,63 @@ public class MainActivity extends Activity {
         }
         doc.finishPage(page);ByteArrayOutputStream out=new ByteArrayOutputStream();doc.writeTo(out);doc.close();return out.toByteArray();
     }
+
+    private String fieldValue(TemplateField f,String person,String title,String d,String org,int num){
+        switch(f.key){case "person":return person;case "title":return title;case "date":return d;case "org":return org;case "number":return String.format(Locale.US,"%05d",num);default:return f.label;}
+    }
+    private void drawCustomFields(Canvas c,Paint p,Template t,String person,String title,String d,String org,int num){
+        for(TemplateField f:t.fields){
+            String value=fieldValue(f,person,title,d,org,num);
+            p.setColor(Color.rgb(35,42,52));p.setTextAlign(Paint.Align.CENTER);
+            p.setTypeface(Typeface.create("serif",f.key.equals("person")?Typeface.BOLD:Typeface.NORMAL));
+            p.setTextSize(f.size);
+            drawFit(c,value,842*f.x,595*f.y,700,p,f.size,Math.max(10,f.size*.55f));
+        }
+    }
+    private void saveCustomTemplate(Template t){
+        try{
+            JSONArray a=new JSONArray();
+            for(TemplateField f:t.fields){JSONObject o=new JSONObject();o.put("key",f.key);o.put("label",f.label);o.put("x",f.x);o.put("y",f.y);o.put("size",f.size);a.put(o);}
+            getPreferences(MODE_PRIVATE).edit().putString("custom_fields_"+t.uri.toString(),a.toString()).apply();
+        }catch(Exception ignored){}
+    }
+    private void showFieldEditor(Template t){
+        LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(12),dp(8),dp(12),dp(8));
+        TextView help=txt("Перетаскивайте поля пальцем. Их положение будет сохранено и применено ко всем PDF.",12,muted,false);panel.addView(help);
+        FrameLayout canvas=new FrameLayout(this);canvas.setBackgroundColor(Color.WHITE);
+        LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,dp(245));cp.topMargin=dp(10);panel.addView(canvas,cp);
+        try{Bitmap bg=loadTemplate(t.uri);if(bg!=null){ImageView image=new ImageView(this);image.setImageBitmap(bg);image.setScaleType(ImageView.ScaleType.FIT_XY);canvas.addView(image,new FrameLayout.LayoutParams(-1,-1));}}catch(Exception ignored){}
+        ArrayList<TextView> labels=new ArrayList<>();
+        Runnable render=()->{
+            for(TextView v:labels)canvas.removeView(v);labels.clear();
+            for(TemplateField f:t.fields){
+                TextView v=txt(f.label,Math.max(10,Math.round(f.size*.42f)),Color.rgb(28,39,61),true);
+                v.setBackground(drawable(Color.argb(65,90,120,210),5,accent,1));v.setPadding(dp(5),dp(3),dp(5),dp(3));v.setGravity(Gravity.CENTER);
+                FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(-2,-2);lp.leftMargin=(int)(canvas.getWidth()*f.x);lp.topMargin=(int)(canvas.getHeight()*f.y);
+                canvas.addView(v,lp);labels.add(v);
+                v.setOnTouchListener((view,event)->{
+                    if(event.getAction()==android.view.MotionEvent.ACTION_DOWN){view.setTag(new float[]{event.getRawX(),event.getRawY(),view.getX(),view.getY()});return true;}
+                    if(event.getAction()==android.view.MotionEvent.ACTION_MOVE){float[] q=(float[])view.getTag();float nx=Math.max(0,Math.min(canvas.getWidth()-view.getWidth(),q[2]+event.getRawX()-q[0]));float ny=Math.max(0,Math.min(canvas.getHeight()-view.getHeight(),q[3]+event.getRawY()-q[1]));view.setX(nx);view.setY(ny);f.x=nx/Math.max(1,canvas.getWidth());f.y=ny/Math.max(1,canvas.getHeight());return true;}
+                    return event.getAction()==android.view.MotionEvent.ACTION_UP;
+                });
+            }
+        };
+        canvas.post(render);
+        Button add=button("＋ Добавить поле",Color.rgb(235,238,250));add.setTextColor(accent);panel.addView(add);
+        add.setOnClickListener(v->{
+            String[] names={"Имя и фамилия","Название курса","Дата","Организатор / подпись","Номер сертификата"};
+            String[] keys={"person","title","date","org","number"};
+            new AlertDialog.Builder(this).setTitle("Какое поле добавить?").setItems(names,(d,w)->{
+                t.fields.add(new TemplateField(keys[w],names[w],.5f,.5f,w==0?34:18));canvas.post(render);
+            }).show();
+        });
+        Button remove=button("Удалить последнее поле",Color.rgb(247,238,238));remove.setTextColor(Color.rgb(160,65,65));panel.addView(remove);
+        remove.setOnClickListener(v->{if(!t.fields.isEmpty()){t.fields.remove(t.fields.size()-1);canvas.post(render);}});
+        new AlertDialog.Builder(this).setTitle("Настройка полей шаблона").setView(panel)
+            .setPositiveButton("Сохранить",(d,w)->{saveCustomTemplate(t);toast("Позиции полей сохранены");})
+            .setNegativeButton("Отмена",null).setNeutralButton("Изменить поля",(d,w)->showFieldEditor(t)).show();
+    }
+
     private Bitmap loadTemplate(Uri uri)throws Exception{
         String type=getContentResolver().getType(uri);
         if(type!=null&&type.equals("application/pdf")){
