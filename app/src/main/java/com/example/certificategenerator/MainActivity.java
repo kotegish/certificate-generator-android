@@ -447,7 +447,7 @@ public class MainActivity extends Activity {
         PdfDocument doc=new PdfDocument();PdfDocument.Page page=doc.startPage(new PdfDocument.PageInfo.Builder(pageW,pageH,1).create());Canvas c=page.getCanvas();Paint p=new Paint(3);
         if(selected.uri!=null){
             if(bg!=null){c.drawBitmap(bg,null,new Rect(0,0,pageW,pageH),p);bg.recycle();}else drawDesign(c,p,selected);
-            c.save();c.scale(pageW/842f,pageH/595f);drawCustomFields(c,p,selected,person,title,d,org,num,pageW,pageH);c.restore();
+            drawCustomFields(c,p,selected,person,title,d,org,num,pageW,pageH);
         }else drawCertificate(c,p,selected,person,title,d,org,num,false);
         doc.finishPage(page);ByteArrayOutputStream out=new ByteArrayOutputStream();doc.writeTo(out);doc.close();return out.toByteArray();
     }
@@ -535,7 +535,7 @@ public class MainActivity extends Activity {
     private Bitmap loadTemplate(Uri uri)throws Exception{
         String type=getContentResolver().getType(uri);
         if(type!=null&&type.equals("application/pdf")){
-            try(ParcelFileDescriptor fd=getContentResolver().openFileDescriptor(uri,"r");PdfRenderer renderer=new PdfRenderer(fd)){if(renderer.getPageCount()==0)return null;PdfRenderer.Page pg=renderer.openPage(0);Bitmap b=Bitmap.createBitmap(1684,1190,Bitmap.Config.ARGB_8888);b.eraseColor(Color.WHITE);pg.render(b,null,null,PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);pg.close();return b;}
+            try(ParcelFileDescriptor fd=getContentResolver().openFileDescriptor(uri,"r");PdfRenderer renderer=new PdfRenderer(fd)){if(renderer.getPageCount()==0)return null;PdfRenderer.Page pg=renderer.openPage(0);int w=1684,h=Math.max(1,Math.round(w*(float)pg.getHeight()/Math.max(1,pg.getWidth())));Bitmap b=Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888);b.eraseColor(Color.WHITE);pg.render(b,null,null,PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);pg.close();return b;}
         }
         try(InputStream in=getContentResolver().openInputStream(uri)){return BitmapFactory.decodeStream(in);}
     }
