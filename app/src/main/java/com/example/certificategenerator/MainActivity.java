@@ -8,14 +8,20 @@ import android.graphics.pdf.PdfDocument;
 import android.graphics.pdf.PdfRenderer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
 import android.view.*;
 import android.widget.*;
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class MainActivity extends Activity {
     private static final int PICK_CSV=41, PICK_TEMPLATE=42, PICK_FOLDER=43;
@@ -88,7 +94,9 @@ public class MainActivity extends Activity {
         updateSaveLocation();
         TextView note=txt("Для каждого участника будет создан отдельный PDF. Все файлы также соберём в один ZIP-архив.",13,muted,false); root.addView(note,params(-1,-2,12));
         Button make=button("Создать сертификаты  →",Color.rgb(39,53,83)); make.setTextColor(Color.WHITE); root.addView(make,params(-1,dp(54),14)); make.setOnClickListener(v->generate());
-        TextView footer=txt("Ваши макеты и документы остаются на устройстве.",11,muted,false); footer.setGravity(Gravity.CENTER); footer.setPadding(0,dp(18),0,0); root.addView(footer);
+        TextView footer=txt("Ваши макеты и документы остаются на устройстве.",11,muted,false); footer.setGravity(Gravity.CENTER); footer.setPadding(0,dp(18),0,dp(8)); root.addView(footer);
+        Button updateBtn=button("Проверить обновления",Color.rgb(235,238,250)); updateBtn.setTextColor(accent); root.addView(updateBtn,params(-1,dp(48),6)); updateBtn.setOnClickListener(v->checkForUpdates(updateBtn));
+        TextView version=txt("Версия "+currentVersion(),10,muted,false); version.setGravity(Gravity.CENTER); version.setPadding(0,dp(5),0,0); root.addView(version);
         updateSelected();
     }
 
@@ -162,6 +170,59 @@ public class MainActivity extends Activity {
                 new AlertDialog.Builder(this).setTitle("Готово!").setMessage("Создано документов: "+people.size()+"\\n\\nПапка: "+dir.getAbsolutePath()+"\\nZIP: "+zip.getName()).setPositiveButton("Понятно",null).show();
             }
         }catch(Exception e){toast("Ошибка сохранения: "+e.getMessage());}
+    }
+    private String currentVersion(){
+        try{return getPackageManager().getPackageInfo(getPackageName(),0).versionName;}catch(Exception e){return "неизвестна";}
+    }
+    private void checkForUpdates(Button button){
+        button.setEnabled(false); button.setText("Проверяем...");
+        new Thread(()->{
+            String latest=null,download=null,releasePage=null,error=null;
+            HttpURLConnection connection=null;
+            try{
+                URL url=new URL("https://api.github.com/repos/kotegish/certificate-generator-android/releases/latest");
+                connection=(HttpURLConnection)url.openConnection();
+                connection.setRequestMethod("GET"); connection.setConnectTimeout(10000); connection.setReadTimeout(10000);
+                connection.setRequestProperty("Accept","application/vnd.github+json");
+                connection.setRequestProperty("User-Agent","CertificateGenerator-Android");
+                int code=connection.getResponseCode();
+                if(code==404)throw new IOException("Пока нет опубликованных релизов.");
+                if(code!=200)throw new IOException("Сервер вернул ошибку "+code);
+                StringBuilder body=new StringBuilder();
+                try(BufferedReader reader=new BufferedReader(new InputStreamReader(connection.getInputStream(),StandardCharsets.UTF_8))){
+                    String line;while((line=reader.readLine())!=null)body.append(line);
+                }
+                JSONObject release=new JSONObject(body.toString());
+                latest=release.optString("tag_name","");
+                releasePage=release.optString("html_url","");
+                JSONArray assets=release.optJSONArray("assets");
+                if(assets!=null)for(int i=0;i<assets.length();i++){
+                    JSONObject asset=assets.getJSONObject(i);
+                    String name=asset.optString("name","");
+                    if(name.toLowerCase(Locale.ROOT).endsWith(".apk")){download=asset.optString("browser_download_url","");break;}
+                }
+                if(latest.isEmpty())throw new IOException("У релиза не указана версия.");
+            }catch(Exception e){error=e.getMessage()==null?"Не удалось проверить обновления":e.getMessage();}
+            finally{if(connection!=null)connection.disconnect();}
+            final String v=latest,apk=download,page=releasePage,problem=error;
+            new Handler(Looper.getMainLooper()).post(()->{
+                button.setEnabled(true);button.setText("Проверить обновления");
+                if(problem!=null){new AlertDialog.Builder(this).setTitle("Проверка обновлений").setMessage(problem+"\\n\\nТекущая версия: "+currentVersion()).setPositiveButton("Понятно",null).show();return;}
+                if(apk==null||apk.isEmpty()){
+                    new AlertDialog.Builder(this).setTitle("Новая версия: "+v).setMessage("Релиз опубликован, но APK-файл к нему не прикреплён. Откройте страницу релиза позже.").setPositiveButton("Открыть релиз",(d,w)->openUpdateUrl(page)).setNegativeButton("Закрыть",null).show();return;
+                }
+                if(normalizeVersion(v).equals(normalizeVersion(currentVersion()))){
+                    new AlertDialog.Builder(this).setTitle("Обновления не найдены").setMessage("Установлена последняя версия: "+currentVersion()).setPositiveButton("Понятно",null).show();
+                }else{
+                    new AlertDialog.Builder(this).setTitle("Доступно обновление").setMessage("Новая версия: "+v+"\\nУстановлена: "+currentVersion()+"\\n\\nСкачать APK?").setPositiveButton("Скачать",(d,w)->openUpdateUrl(apk)).setNegativeButton("Позже",null).show();
+                }
+            });
+        }).start();
+    }
+    private String normalizeVersion(String version){return version==null?"":version.trim().toLowerCase(Locale.ROOT).replaceFirst("^v","");}
+    private void openUpdateUrl(String url){
+        try{Intent intent=new Intent(Intent.ACTION_VIEW,Uri.parse(url));startActivity(intent);}
+        catch(Exception e){toast("Не удалось открыть ссылку обновления");}
     }
     private void chooseSaveFolder(){
         Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
