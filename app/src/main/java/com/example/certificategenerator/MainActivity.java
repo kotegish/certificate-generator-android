@@ -441,12 +441,12 @@ public class MainActivity extends Activity {
     }
 
     private byte[] pdf(String person,String title,String d,String org,int num)throws Exception{
-        PdfDocument doc=new PdfDocument();PdfDocument.Page page=doc.startPage(new PdfDocument.PageInfo.Builder(842,595,1).create());Canvas c=page.getCanvas();Paint p=new Paint(3);
-        if(selected.uri!=null){Bitmap bg=loadTemplate(selected.uri);if(bg!=null){c.drawBitmap(bg,null,new Rect(0,0,842,595),p);bg.recycle();}else drawDesign(c,p,selected);}
-        else drawDesign(c,p,selected);
-        if(selected.uri!=null){
-            drawCustomFields(c,p,selected,person,title,d,org,num);
-        }else{
+        Bitmap bg=null;int pageW=842,pageH=595;
+        if(selected.uri!=null){bg=loadTemplate(selected.uri);if(bg!=null&&bg.getWidth()>0&&bg.getHeight()>0)pageH=Math.max(1,Math.round(pageW*(float)bg.getHeight()/bg.getWidth()));}
+        PdfDocument doc=new PdfDocument();PdfDocument.Page page=doc.startPage(new PdfDocument.PageInfo.Builder(pageW,pageH,1).create());Canvas c=page.getCanvas();Paint p=new Paint(3);
+        if(selected.uri!=null){if(bg!=null){c.drawBitmap(bg,null,new Rect(0,0,pageW,pageH),p);bg.recycle();}else drawDesign(c,p,selected);}else drawDesign(c,p,selected);
+        if(selected.uri!=null){c.save();c.scale(pageW/842f,pageH/595f);drawCustomFields(c,p,selected,person,title,d,org,num);c.restore();}
+        else{
             p.setTextAlign(Paint.Align.CENTER);p.setTypeface(Typeface.create("serif",Typeface.BOLD));p.setColor(selected.accent);p.setTextSize(17);c.drawText(selected.category.equals("Дипломы")?"ДИПЛОМ":selected.category.equals("Грамоты")?"ПОЧЁТНАЯ ГРАМОТА":"СЕРТИФИКАТ",421,132,p);
             p.setColor(ink);p.setTypeface(Typeface.create("serif",0));p.setTextSize(23);c.drawText("настоящим подтверждается, что",421,205,p);
             p.setTypeface(Typeface.create("serif",Typeface.BOLD));p.setTextSize(34);drawFit(c,person,421,285,690,p,34,18);
@@ -500,18 +500,20 @@ public class MainActivity extends Activity {
         TextView help=txt("Перетаскивайте поля пальцем. Их положение будет сохранено и применено ко всем PDF.",12,muted,false);panel.addView(help);
         FrameLayout canvas=new FrameLayout(this);canvas.setBackgroundColor(Color.WHITE);
         LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,dp(245));cp.topMargin=dp(10);panel.addView(canvas,cp);
-        try{Bitmap bg=loadTemplate(t.uri);if(bg!=null){ImageView image=new ImageView(this);image.setImageBitmap(bg);image.setScaleType(ImageView.ScaleType.FIT_XY);canvas.addView(image,new FrameLayout.LayoutParams(-1,-1));}}catch(Exception ignored){}
+        try{Bitmap bg=loadTemplate(t.uri);if(bg!=null){final int bw=bg.getWidth(),bh=bg.getHeight();ImageView image=new ImageView(this);image.setImageBitmap(bg);image.setScaleType(ImageView.ScaleType.FIT_XY);canvas.addView(image,new FrameLayout.LayoutParams(-1,-1));canvas.post(()->{int w=canvas.getWidth();ViewGroup.LayoutParams size=canvas.getLayoutParams();size.height=Math.max(dp(120),Math.round(w*(float)bh/Math.max(1,bw)));canvas.setLayoutParams(size);});}}catch(Exception ignored){}
         ArrayList<TextView> labels=new ArrayList<>();
         Runnable render=()->{
             for(TextView v:labels)canvas.removeView(v);labels.clear();
             for(TemplateField f:t.fields){
                 TextView v=txt(f.label,Math.max(10,Math.round(f.size*.42f)),Color.rgb(28,39,61),true);
                 v.setBackground(drawable(Color.argb(65,90,120,210),5,accent,1));v.setPadding(dp(5),dp(3),dp(5),dp(3));v.setGravity(Gravity.CENTER);
-                FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(-2,-2);lp.leftMargin=(int)(canvas.getWidth()*f.x);lp.topMargin=(int)(canvas.getHeight()*f.y);
+                v.measure(View.MeasureSpec.makeMeasureSpec(canvas.getWidth(),View.MeasureSpec.AT_MOST),View.MeasureSpec.makeMeasureSpec(canvas.getHeight(),View.MeasureSpec.AT_MOST));
+                int vw=v.getMeasuredWidth(),vh=v.getMeasuredHeight();
+                FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(-2,-2);lp.leftMargin=Math.max(0,Math.min(canvas.getWidth()-vw,Math.round(canvas.getWidth()*f.x-vw/2f)));lp.topMargin=Math.max(0,Math.min(canvas.getHeight()-vh,Math.round(canvas.getHeight()*f.y-vh/2f)));
                 canvas.addView(v,lp);labels.add(v);
                 v.setOnTouchListener((view,event)->{
                     if(event.getAction()==android.view.MotionEvent.ACTION_DOWN){view.setTag(new float[]{event.getRawX(),event.getRawY(),view.getX(),view.getY()});return true;}
-                    if(event.getAction()==android.view.MotionEvent.ACTION_MOVE){float[] q=(float[])view.getTag();float nx=Math.max(0,Math.min(canvas.getWidth()-view.getWidth(),q[2]+event.getRawX()-q[0]));float ny=Math.max(0,Math.min(canvas.getHeight()-view.getHeight(),q[3]+event.getRawY()-q[1]));view.setX(nx);view.setY(ny);f.x=nx/Math.max(1,canvas.getWidth());f.y=ny/Math.max(1,canvas.getHeight());return true;}
+                    if(event.getAction()==android.view.MotionEvent.ACTION_MOVE){float[] q=(float[])view.getTag();float nx=Math.max(0,Math.min(canvas.getWidth()-view.getWidth(),q[2]+event.getRawX()-q[0]));float ny=Math.max(0,Math.min(canvas.getHeight()-view.getHeight(),q[3]+event.getRawY()-q[1]));view.setX(nx);view.setY(ny);f.x=(nx+view.getWidth()/2f)/Math.max(1,canvas.getWidth());f.y=(ny+view.getHeight()/2f)/Math.max(1,canvas.getHeight());return true;}
                     return event.getAction()==android.view.MotionEvent.ACTION_UP;
                 });
             }
