@@ -60,7 +60,8 @@ public class MainActivity extends Activity {
         root=new LinearLayout(this); root.setOrientation(1); root.setPadding(dp(20),dp(22),dp(20),dp(32));
         root.setBackgroundColor(Color.rgb(246,247,251)); scroll.addView(root); setContentView(scroll);
 
-        TextView brand=txt("CERTIFICATE STUDIO",11,accent,true); brand.setLetterSpacing(.16f); root.addView(brand);
+        TextView brand=txt("SOLODEFSTUDIO",12,accent,true); brand.setLetterSpacing(.18f); root.addView(brand);
+        TextView brandSub=txt("CERTIFICATE GENERATOR",9,muted,true); brandSub.setLetterSpacing(.14f); brandSub.setPadding(0,dp(3),0,0); root.addView(brandSub);
         TextView title=txt("Создавайте документы,\nкоторые запоминаются",27,ink,true); title.setPadding(0,dp(12),0,dp(5)); root.addView(title);
         TextView intro=txt("Персональные сертификаты и дипломы — сразу для всего списка участников.",14,muted,false); root.addView(intro);
 
@@ -94,28 +95,52 @@ public class MainActivity extends Activity {
         updateSaveLocation();
         TextView note=txt("Для каждого участника будет создан отдельный PDF. Все файлы также соберём в один ZIP-архив.",13,muted,false); root.addView(note,params(-1,-2,12));
         Button make=button("Создать сертификаты  →",Color.rgb(39,53,83)); make.setTextColor(Color.WHITE); root.addView(make,params(-1,dp(54),14)); make.setOnClickListener(v->generate());
-        TextView footer=txt("Ваши макеты и документы остаются на устройстве.",11,muted,false); footer.setGravity(Gravity.CENTER); footer.setPadding(0,dp(18),0,dp(8)); root.addView(footer);
+        TextView footer=txt("Ваши макеты и документы остаются на устройстве.",11,muted,false); footer.setGravity(Gravity.CENTER); footer.setPadding(0,dp(18),0,dp(5)); root.addView(footer);
+        TextView studio=txt("Разработано SoloDefStudio",10,accent,true); studio.setGravity(Gravity.CENTER); studio.setPadding(0,dp(3),0,dp(8)); root.addView(studio);
         Button updateBtn=button("Проверить обновления",Color.rgb(235,238,250)); updateBtn.setTextColor(accent); root.addView(updateBtn,params(-1,dp(48),6)); updateBtn.setOnClickListener(v->checkForUpdates(updateBtn));
         TextView version=txt("Версия "+currentVersion(),10,muted,false); version.setGravity(Gravity.CENTER); version.setPadding(0,dp(5),0,0); root.addView(version);
         updateSelected();
     }
 
     private void addPreview(LinearLayout row,Template t){
-        LinearLayout wrap=new LinearLayout(this); wrap.setOrientation(1); wrap.setGravity(Gravity.CENTER); 
+        LinearLayout wrap=new LinearLayout(this); wrap.setOrientation(1); wrap.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams wp=new LinearLayout.LayoutParams(0,-2,1); wp.setMargins(dp(3),0,dp(3),0); row.addView(wrap,wp);
-        FrameLayout frame=new FrameLayout(this); frame.setBackground(drawable(t.color,12,Color.rgb(226,229,236),1)); frame.setPadding(dp(5),dp(5),dp(5),dp(5));
-        LinearLayout.LayoutParams fp=new LinearLayout.LayoutParams(-1,dp(67)); wrap.addView(frame,fp);
-        View border=new View(this); GradientDrawable gd=drawable(t.color,3,t.accent,2); border.setBackground(gd);
-        FrameLayout.LayoutParams bp=new FrameLayout.LayoutParams(-1,-1); bp.setMargins(dp(4),dp(4),dp(4),dp(4)); frame.addView(border,bp);
-        TextView stamp=txt("✦",17,t.accent,true); stamp.setGravity(Gravity.CENTER); frame.addView(stamp,new FrameLayout.LayoutParams(-1,-1));
+        FrameLayout frame=new FrameLayout(this); frame.setBackground(drawable(t.color,9,t==selected?accent:Color.rgb(226,229,236),t==selected?3:1));
+        LinearLayout.LayoutParams fp=new LinearLayout.LayoutParams(-1,dp(72)); wrap.addView(frame,fp);
+        drawPreviewArtwork(frame,t);
         TextView name=txt(t.name,10,ink,true); name.setGravity(Gravity.CENTER); name.setPadding(0,dp(5),0,0); wrap.addView(name);
-        wrap.setOnClickListener(v->{selected=t;updateSelected();});
+        wrap.setOnClickListener(v->{selected=t;updateSelected();showTemplates();});
+    }
+    private void drawPreviewArtwork(FrameLayout frame,Template t){
+        View border=new View(this); border.setBackground(drawable(Color.TRANSPARENT,4,t.accent,2));
+        FrameLayout.LayoutParams bp=new FrameLayout.LayoutParams(-1,-1); bp.setMargins(dp(5),dp(5),dp(5),dp(5)); frame.addView(border,bp);
+        LinearLayout art=new LinearLayout(this); art.setOrientation(1); art.setGravity(Gravity.CENTER);
+        FrameLayout.LayoutParams ap=new FrameLayout.LayoutParams(-1,-1); ap.setMargins(dp(9),dp(7),dp(9),dp(7)); frame.addView(art,ap);
+        TextView star=txt("✦",13,t.accent,true); star.setGravity(Gravity.CENTER); art.addView(star);
+        TextView heading=txt(t.category.equals("Дипломы")?"ДИПЛОМ":t.category.equals("Грамоты")?"ГРАМОТА":"СЕРТИФИКАТ",7,t.accent,true); heading.setGravity(Gravity.CENTER); art.addView(heading);
+        TextView line=txt("ИМЯ УЧАСТНИКА",7,ink,true); line.setGravity(Gravity.CENTER); line.setPadding(0,dp(3),0,0); art.addView(line);
+        View rule=new View(this); rule.setBackgroundColor(t.accent); LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(dp(48),dp(1)); rp.topMargin=dp(3); art.addView(rule,rp);
     }
     private void showTemplates(){
-        String[] names=new String[templates.size()]; for(int i=0;i<templates.size();i++) names[i]=templates.get(i).name+"  ·  "+templates.get(i).category;
-        new AlertDialog.Builder(this).setTitle("Галерея шаблонов").setItems(names,(d,w)->{selected=templates.get(w);updateSelected();}).setNegativeButton("Закрыть",null).show();
+        ScrollView scroll=new ScrollView(this); LinearLayout list=new LinearLayout(this); list.setOrientation(1); list.setPadding(dp(10),dp(8),dp(10),dp(8)); scroll.addView(list);
+        for(int i=0;i<templates.size();i+=2){
+            LinearLayout row=new LinearLayout(this); row.setOrientation(0); list.addView(row,params(-1,-2,8));
+            for(int j=i;j<Math.min(i+2,templates.size());j++){
+                final Template t=templates.get(j);
+                LinearLayout item=new LinearLayout(this); item.setOrientation(1); item.setPadding(dp(7),dp(7),dp(7),dp(7));
+                item.setBackground(drawable(Color.WHITE,13,t==selected?accent:Color.rgb(232,235,241),t==selected?3:1));
+                LinearLayout.LayoutParams ip=new LinearLayout.LayoutParams(0,-2,1); ip.setMargins(dp(4),0,dp(4),0); row.addView(item,ip);
+                FrameLayout preview=new FrameLayout(this); preview.setBackground(drawable(t.color,8,Color.TRANSPARENT,0)); item.addView(preview,new LinearLayout.LayoutParams(-1,dp(105)));
+                drawPreviewArtwork(preview,t);
+                TextView name=txt(t.name,13,ink,true); name.setPadding(0,dp(8),0,dp(2)); item.addView(name);
+                TextView category=txt(t.category,10,muted,false); item.addView(category);
+                TextView state=txt(t==selected?"✓ Выбран":"Нажмите для выбора",10,t==selected?accent:muted,true); state.setPadding(0,dp(5),0,0); item.addView(state);
+                item.setOnClickListener(v->{selected=t;updateSelected();});
+            }
+        }
+        new AlertDialog.Builder(this).setTitle("Выберите дизайн сертификата").setView(scroll).setPositiveButton("Готово",null).show();
     }
-    private void updateSelected(){if(selectedLabel!=null) selectedLabel.setText("Выбран: "+selected.name+"  ·  "+selected.category);}
+    private void updateSelected(){if(selectedLabel!=null) selectedLabel.setText("✓ Выбранный дизайн: "+selected.name+"  ·  "+selected.category);}
     private void pickTemplate(){
         Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT); i.addCategory(Intent.CATEGORY_OPENABLE); i.setType("*/*");
         i.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"image/jpeg","image/png","application/pdf"}); startActivityForResult(i,PICK_TEMPLATE);
