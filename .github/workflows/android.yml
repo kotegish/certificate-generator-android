@@ -1,4 +1,4 @@
-name: Android APK
+name: Android APK and Release
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   actions: read
 
 jobs:
@@ -26,9 +26,26 @@ jobs:
           gradle-version: '8.7'
       - name: Build debug APK
         run: gradle assembleDebug
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: certificate-generator-debug-apk
+          name: certificate-generator-v1.2-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+      - name: Publish v1.2 GitHub Release
+        if: contains(github.event.head_commit.message, '[release]')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.2
+          name: SoloDefStudio Certificate Generator 1.2
+          target_commitish: ${{ github.sha }}
+          body: |
+            Версия 1.2.
+
+            Добавлены готовые шаблоны по референсам: патриотический, современный конкурсный, классический красно-золотой, чёрно-золотой и Lash Master.
+
+            APK подписан временным debug-ключом CI. Для обновления поверх ранее установленной версии потребуется постоянный ключ подписи; без него Android может отклонить установку поверх старой версии.
+          files: app/build/outputs/apk/debug/app-debug.apk
+          fail_on_unmatched_files: true
+          overwrite_files: true
+          make_latest: true
