@@ -28,7 +28,7 @@ public class MainActivity extends Activity {
     private static final int PICK_CSV=41, PICK_TEMPLATE=42, PICK_FOLDER=43;
     private final ArrayList<String> people=new ArrayList<>();
     private final ArrayList<Template> templates=new ArrayList<>();
-    private EditText event,date,issuer;
+    private EditText event,date,issuer,gratitude;
     private TextView csvStatus,selectedLabel,saveLocation;
     private Uri saveTree;
     private Uri csv;
@@ -119,10 +119,11 @@ public class MainActivity extends Activity {
             String oldEvent=event==null?"":event.getText().toString();
             String oldDate=date==null?"":date.getText().toString();
             String oldIssuer=issuer==null?"":issuer.getText().toString();
+            String oldGratitude=gratitude==null?"":gratitude.getText().toString();
             language=codes[w];
             getPreferences(MODE_PRIVATE).edit().putString("app_language",language).apply();
             d.dismiss();build();
-            event.setText(oldEvent);date.setText(oldDate);issuer.setText(oldIssuer);
+            event.setText(oldEvent);date.setText(oldDate);issuer.setText(oldIssuer);gratitude.setText(oldGratitude);
         }).setNegativeButton("Отмена",null).show();
     }
 
@@ -137,7 +138,15 @@ public class MainActivity extends Activity {
         Template(String n,String c,int col,int a,int st){name=n;category=c;color=col;accent=a;style=st;}
     }
 
-    private void addArtworkTemplate(String name,String category,String asset){Template t=new Template(name,category,Color.rgb(35,29,22),Color.rgb(213,174,91),0);t.assetName=asset;templates.add(t);}
+    private void addArtworkTemplate(String name,String category,String asset){
+        Template t=new Template(name,category,Color.rgb(35,29,22),Color.rgb(213,174,91),0);t.assetName=asset;
+        t.fields.add(new TemplateField("person","Имя и фамилия",.50f,.47f,34));
+        t.fields.add(new TemplateField("gratitude","Текст благодарности",.50f,.60f,18));
+        t.fields.add(new TemplateField("title","Название курса",.50f,.70f,22));
+        t.fields.add(new TemplateField("date","Дата",.30f,.83f,16));
+        t.fields.add(new TemplateField("org","Организатор / подпись",.74f,.90f,14));
+        restoreTemplateFields(t);templates.add(t);
+    }
 
     @Override public void onCreate(Bundle b){
         super.onCreate(b);
@@ -191,6 +200,7 @@ public class MainActivity extends Activity {
         previewRow=new LinearLayout(this); previewRow.setOrientation(0); previewRow.setPadding(0,dp(12),0,dp(8)); hero.addView(previewRow);
         refreshPreviewRow();
         Button gallery=button("Открыть все шаблоны",accent); hero.addView(gallery); gallery.setOnClickListener(v->showTemplates());
+        Button editLayout=button("Настроить расположение полей",Color.rgb(235,238,250));editLayout.setTextColor(accent);hero.addView(editLayout);editLayout.setOnClickListener(v->{ensureEditableFields(selected);showFieldEditor(selected);});
 
         LinearLayout custom=card(); custom.setOrientation(0); custom.setGravity(Gravity.CENTER_VERTICAL); custom.setPadding(dp(16),dp(13),dp(16),dp(13));
         root.addView(custom,params(-1,-2,12));
@@ -204,8 +214,8 @@ public class MainActivity extends Activity {
         LinearLayout data=card(); data.setOrientation(1); data.setPadding(dp(16),dp(14),dp(16),dp(16)); root.addView(data,params(-1,-2,10));
         Button csvBtn=button("Загрузить список участников · CSV",Color.rgb(235,238,250)); csvBtn.setTextColor(accent); data.addView(csvBtn); csvBtn.setOnClickListener(v->chooseCsv());
         csvStatus=txt("Файл не выбран",12,muted,false); csvStatus.setPadding(0,dp(7),0,dp(12)); data.addView(csvStatus);
-        event=field("Название мероприятия или курса"); date=field("Дата выдачи"); issuer=field("Организация / подпись");
-        addInput(data,"НАЗВАНИЕ",event); addInput(data,"ДАТА",date); addInput(data,"ОРГАНИЗАТОР",issuer);
+        event=field("Название мероприятия или курса"); date=field("Дата выдачи"); issuer=field("Организация / подпись"); gratitude=field("Текст благодарности");
+        addInput(data,"НАЗВАНИЕ",event); addInput(data,"ДАТА",date); addInput(data,"ОРГАНИЗАТОР",issuer); addInput(data,"ТЕКСТ БЛАГОДАРНОСТИ",gratitude);
 
         TextView s3=section("ШАГ 3 · РЕЗУЛЬТАТ"); root.addView(s3,params(-1,-2,22));
         LinearLayout destination=card(); destination.setOrientation(1); destination.setPadding(dp(15),dp(13),dp(15),dp(13)); root.addView(destination,params(-1,-2,12));
@@ -250,15 +260,12 @@ public class MainActivity extends Activity {
             float dx=(getWidth()-842f*scale)/2f,dy=(getHeight()-pageH*scale)/2f;
             canvas.save();canvas.translate(dx,dy);canvas.scale(scale,scale);
             if(original!=null){canvas.drawBitmap(original,null,new RectF(0,0,842,pageH),paint);original.recycle();}
-            if(template.uri!=null)drawCustomFields(canvas,paint,template,"ИМЯ УЧАСТНИКА","Название мероприятия","12.12.2026","Организатор",1,842,pageH);
-            else drawSampleText(canvas,paint,template,pageH);
+            drawCustomFields(canvas,paint,template,"ИМЯ УЧАСТНИКА","Название мероприятия","12.12.2026","Организатор","Благодарим за участие!",1,842,pageH);
             canvas.restore();
         }
     }
     // Текст — независимый слой поверх готового художественного JPEG-фона.
-    private void drawSampleText(Canvas c,Paint p,Template t,float pageH){
-        drawArtworkText(c,p,t,"ИМЯ УЧАСТНИКА","Название мероприятия","12.12.2026","Организатор",1,pageH);
-    }
+    private void drawSampleText(Canvas c,Paint p,Template t,float pageH){drawCustomFields(c,p,t,"ИМЯ УЧАСТНИКА","Название мероприятия","12.12.2026","Организатор","Благодарим за участие!",1,842,pageH);}
     private void drawArtworkText(Canvas c,Paint p,Template t,String person,String title,String d,String org,int num,float pageH){
         float k=pageH/595f;
         p.setTextAlign(Paint.Align.CENTER);p.setColor(Color.rgb(112,79,34));
@@ -311,6 +318,15 @@ public class MainActivity extends Activity {
         int index=templates.indexOf(selected);if(index<0)index=0;
         for(int n=0;n<3;n++)addPreview(previewRow,templates.get((index+n)%templates.size()));
     }
+    private void ensureEditableFields(Template t){
+        if(t.fields.isEmpty()){
+            t.fields.add(new TemplateField("person","Имя и фамилия",.50f,.45f,34));
+            t.fields.add(new TemplateField("gratitude","Текст благодарности",.50f,.59f,18));
+            t.fields.add(new TemplateField("title","Название курса",.50f,.70f,22));
+            t.fields.add(new TemplateField("date","Дата",.30f,.83f,16));
+            t.fields.add(new TemplateField("org","Организатор / подпись",.74f,.90f,14));
+        }
+    }
     private void updateSelected(){
         if(selectedLabel!=null)selectedLabel.setText(tr("Выбранный дизайн: ")+tr(selected.name)+"  ·  "+tr(selected.category));
         refreshPreviewRow();
@@ -333,8 +349,9 @@ public class MainActivity extends Activity {
         if(req==PICK_TEMPLATE){
             String n="Мой шаблон "+(templates.size()-3);
             Template t=new Template(n,"Мои шаблоны",Color.rgb(246,245,241),Color.rgb(104,91,142),0); t.uri=u;
-            t.fields.add(new TemplateField("person","Имя и фамилия",.50f,.48f,34));
-            t.fields.add(new TemplateField("title","Название курса",.50f,.64f,22));
+            t.fields.add(new TemplateField("person","Имя и фамилия",.50f,.43f,34));
+            t.fields.add(new TemplateField("gratitude","Текст благодарности",.50f,.58f,18));
+            t.fields.add(new TemplateField("title","Название курса",.50f,.69f,22));
             t.fields.add(new TemplateField("date","Дата",.30f,.82f,16));
             t.fields.add(new TemplateField("org","Организатор / подпись",.74f,.90f,14));
             templates.add(t); selected=t; updateSelected(); saveCustomTemplate(t); saveCustomTemplateList(); showFieldEditor(t);
@@ -358,16 +375,16 @@ public class MainActivity extends Activity {
 
     private void generate(){
         if(people.isEmpty()){toast("Сначала загрузите CSV со списком участников");return;}
-        String title=event.getText().toString().trim(),d=date.getText().toString().trim(),org=issuer.getText().toString().trim();
+        String title=event.getText().toString().trim(),d=date.getText().toString().trim(),org=issuer.getText().toString().trim(),thanks=gratitude.getText().toString().trim();
         if(title.isEmpty()||d.isEmpty()){toast("Заполните название и дату");return;}
         try{
             if(saveTree!=null){
-                saveCertificatesToTree(title,d,org);
+                saveCertificatesToTree(title,d,org,thanks);
                 new AlertDialog.Builder(this).setTitle("Готово!").setMessage("Создано документов: "+people.size()+"\\n\\nPDF и ZIP сохранены в выбранную папку, в новой папке с датой и временем.").setPositiveButton("Понятно",null).show();
             }else{
                 File dir=new File(getExternalFilesDir(null),"Certificates");if(!dir.exists())dir.mkdirs();File zip=new File(dir,"certificates_"+System.currentTimeMillis()+".zip");
                 try(ZipOutputStream zos=new ZipOutputStream(new FileOutputStream(zip))){
-                    for(int n=0;n<people.size();n++){String fn=String.format(Locale.US,"%03d_%s.pdf",n+1,safe(people.get(n)));byte[] bytes=pdf(people.get(n),title,d,org,n+1);
+                    for(int n=0;n<people.size();n++){String fn=String.format(Locale.US,"%03d_%s.pdf",n+1,safe(people.get(n)));byte[] bytes=pdf(people.get(n),title,d,org,thanks,n+1);
                         try(FileOutputStream f=new FileOutputStream(new File(dir,fn))){f.write(bytes);}zos.putNextEntry(new ZipEntry(fn));zos.write(bytes);zos.closeEntry();}
                 }
                 new AlertDialog.Builder(this).setTitle("Готово!").setMessage("Создано документов: "+people.size()+"\\n\\nПапка: "+dir.getAbsolutePath()+"\\nZIP: "+zip.getName()).setPositiveButton("Понятно",null).show();
@@ -523,7 +540,7 @@ public class MainActivity extends Activity {
         if(saveTree==null)saveLocation.setText("По умолчанию: папка приложения Certificates во внутреннем хранилище Android");
         else saveLocation.setText("Выбрана папка телефона. PDF и ZIP будут сохраняться туда.");
     }
-    private Uri saveCertificatesToTree(String title,String d,String org)throws Exception{
+    private Uri saveCertificatesToTree(String title,String d,String org,String thanks)throws Exception{
         String folderName="Certificates_"+new java.text.SimpleDateFormat("yyyyMMdd_HHmmss",Locale.US).format(new Date());
         String rootId=DocumentsContract.getTreeDocumentId(saveTree);
         Uri rootDoc=DocumentsContract.buildDocumentUriUsingTree(saveTree,rootId);
@@ -536,7 +553,7 @@ public class MainActivity extends Activity {
         try(ZipOutputStream zos=new ZipOutputStream(raw)){
             for(int n=0;n<people.size();n++){
                 String fn=String.format(Locale.US,"%03d_%s.pdf",n+1,safe(people.get(n)));
-                byte[] bytes=pdf(people.get(n),title,d,org,n+1);
+                byte[] bytes=pdf(people.get(n),title,d,org,thanks,n+1);
                 Uri pdfUri=DocumentsContract.createDocument(getContentResolver(),runFolder,"application/pdf",fn);
                 if(pdfUri==null)throw new IOException("Не удалось создать файл "+fn);
                 OutputStream out=getContentResolver().openOutputStream(pdfUri);
@@ -548,28 +565,26 @@ public class MainActivity extends Activity {
         return runFolder;
     }
 
-    private byte[] pdf(String person,String title,String d,String org,int num)throws Exception{
+    private byte[] pdf(String person,String title,String d,String org,String thanks,int num)throws Exception{
         Bitmap bg=null;int pageW=842,pageH=595;
         if(selected.uri!=null)bg=loadTemplate(selected.uri);
         else if(selected.assetName!=null)try(InputStream in=getAssets().open("templates/"+selected.assetName)){bg=BitmapFactory.decodeStream(in);}
         if(bg!=null&&bg.getWidth()>0&&bg.getHeight()>0)pageH=Math.max(1,Math.round(pageW*(float)bg.getHeight()/bg.getWidth()));
         PdfDocument doc=new PdfDocument();PdfDocument.Page page=doc.startPage(new PdfDocument.PageInfo.Builder(pageW,pageH,1).create());Canvas c=page.getCanvas();Paint p=new Paint(3);
         if(bg!=null){c.drawBitmap(bg,null,new Rect(0,0,pageW,pageH),p);bg.recycle();}
-        if(selected.uri!=null)drawCustomFields(c,p,selected,person,title,d,org,num,pageW,pageH);
-        else drawArtworkText(c,p,selected,person,title,d,org,num,pageH);
+        drawCustomFields(c,p,selected,person,title,d,org,thanks,num,pageW,pageH);
         doc.finishPage(page);ByteArrayOutputStream out=new ByteArrayOutputStream();doc.writeTo(out);doc.close();return out.toByteArray();
     }
 
-    private String fieldValue(TemplateField f,String person,String title,String d,String org,int num){
-        switch(f.key){case "person":return person;case "title":return title;case "date":return d;case "org":return org;case "number":return String.format(Locale.US,"%05d",num);default:return f.label;}
+    private String fieldValue(TemplateField f,String person,String title,String d,String org,String thanks,int num){
+        switch(f.key){case "person":return person;case "title":return title;case "date":return d;case "org":return org;case "gratitude":return thanks;case "number":return String.format(Locale.US,"%05d",num);default:return f.label;}
     }
-    private void drawCustomFields(Canvas c,Paint p,Template t,String person,String title,String d,String org,int num){
-        drawCustomFields(c,p,t,person,title,d,org,num,842,595);
-    }
-    private void drawCustomFields(Canvas c,Paint p,Template t,String person,String title,String d,String org,int num,float pageW,float pageH){
+    private void drawCustomFields(Canvas c,Paint p,Template t,String person,String title,String d,String org,String thanks,int num,float pageW,float pageH){
         float fontScale=pageH/595f;
+        p.setTextAlign(Paint.Align.CENTER);p.setColor(Color.rgb(112,79,34));p.setTypeface(Typeface.create("serif",Typeface.BOLD));p.setTextSize(17*fontScale);
+        c.drawText(t.category.equals("Дипломы")?"DIPLOMA":t.category.equals("Грамоты")?"AWARD":"CERTIFICATE",pageW*.5f,pageH*.22f,p);
         for(TemplateField f:t.fields){
-            String value=fieldValue(f,person,title,d,org,num);
+            String value=fieldValue(f,person,title,d,org,thanks,num);
             p.setColor(Color.rgb(35,42,52));p.setTextAlign(Paint.Align.CENTER);
             p.setTypeface(Typeface.create("serif",f.key.equals("person")?Typeface.BOLD:Typeface.NORMAL));
             float size=f.size*fontScale;p.setTextSize(size);
@@ -594,19 +609,25 @@ public class MainActivity extends Activity {
             }catch(Exception ignored){}
         }
     }
+    private String templatePrefsKey(Template t){return t.uri!=null?"custom_fields_"+t.uri.toString():"builtin_fields_"+t.assetName;}
+    private void restoreTemplateFields(Template t){
+        String raw=getPreferences(MODE_PRIVATE).getString(templatePrefsKey(t),null);if(raw==null)return;
+        try{JSONArray a=new JSONArray(raw);t.fields.clear();for(int i=0;i<a.length();i++){JSONObject o=a.getJSONObject(i);t.fields.add(new TemplateField(o.optString("key"),o.optString("label"),(float)o.optDouble("x",.5),(float)o.optDouble("y",.5),(float)o.optDouble("size",18)));}}catch(Exception ignored){}
+    }
     private void saveCustomTemplate(Template t){
         try{
             JSONArray a=new JSONArray();
             for(TemplateField f:t.fields){JSONObject o=new JSONObject();o.put("key",f.key);o.put("label",f.label);o.put("x",f.x);o.put("y",f.y);o.put("size",f.size);a.put(o);}
-            getPreferences(MODE_PRIVATE).edit().putString("custom_fields_"+t.uri.toString(),a.toString()).apply();
+            getPreferences(MODE_PRIVATE).edit().putString(templatePrefsKey(t),a.toString()).apply();
         }catch(Exception ignored){}
     }
     private void showFieldEditor(Template t){
+        ensureEditableFields(t);
         LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(12),dp(8),dp(12),dp(8));
         TextView help=txt("Перетаскивайте поля пальцем. Их положение будет сохранено и применено ко всем PDF.",12,muted,false);panel.addView(help);
         FrameLayout canvas=new FrameLayout(this);canvas.setBackgroundColor(Color.WHITE);
         LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,dp(245));cp.topMargin=dp(10);panel.addView(canvas,cp);
-        try{Bitmap bg=loadTemplate(t.uri);if(bg!=null){final int bw=bg.getWidth(),bh=bg.getHeight();ImageView image=new ImageView(this);image.setImageBitmap(bg);image.setScaleType(ImageView.ScaleType.FIT_XY);canvas.addView(image,new FrameLayout.LayoutParams(-1,-1));canvas.post(()->{int w=canvas.getWidth();ViewGroup.LayoutParams size=canvas.getLayoutParams();size.height=Math.max(dp(120),Math.round(w*(float)bh/Math.max(1,bw)));canvas.setLayoutParams(size);});}}catch(Exception ignored){}
+        try{Bitmap bg=t.uri!=null?loadTemplate(t.uri):BitmapFactory.decodeStream(getAssets().open("templates/"+t.assetName));if(bg!=null){final int bw=bg.getWidth(),bh=bg.getHeight();ImageView image=new ImageView(this);image.setImageBitmap(bg);image.setScaleType(ImageView.ScaleType.FIT_XY);canvas.addView(image,new FrameLayout.LayoutParams(-1,-1));canvas.post(()->{int w=canvas.getWidth();ViewGroup.LayoutParams size=canvas.getLayoutParams();size.height=Math.max(dp(120),Math.round(w*(float)bh/Math.max(1,bw)));canvas.setLayoutParams(size);});}}catch(Exception ignored){}
         ArrayList<TextView> labels=new ArrayList<>();
         Runnable render=()->{
             for(TextView v:labels)canvas.removeView(v);labels.clear();
@@ -627,15 +648,15 @@ public class MainActivity extends Activity {
         canvas.post(render);
         Button add=button("＋ Добавить поле",Color.rgb(235,238,250));add.setTextColor(accent);panel.addView(add);
         add.setOnClickListener(v->{
-            String[] names={"Имя и фамилия","Название курса","Дата","Организатор / подпись","Номер сертификата"};
-            String[] keys={"person","title","date","org","number"};
+            String[] names={"Имя и фамилия","Название курса","Дата","Организатор / подпись","Текст благодарности","Номер сертификата"};
+            String[] keys={"person","title","date","org","gratitude","number"};
             new AlertDialog.Builder(this).setTitle("Какое поле добавить?").setItems(names,(d,w)->{
                 t.fields.add(new TemplateField(keys[w],names[w],.5f,.5f,w==0?34:18));canvas.post(render);
             }).show();
         });
         Button remove=button("Удалить последнее поле",Color.rgb(247,238,238));remove.setTextColor(Color.rgb(160,65,65));panel.addView(remove);
         remove.setOnClickListener(v->{if(!t.fields.isEmpty()){t.fields.remove(t.fields.size()-1);canvas.post(render);}});
-        new AlertDialog.Builder(this).setTitle("Настройка полей шаблона").setView(panel)
+        new AlertDialog.Builder(this).setTitle("Настройка расположения полей").setView(panel)
             .setPositiveButton("Сохранить",(d,w)->{saveCustomTemplate(t);toast("Позиции полей сохранены");})
             .setNegativeButton("Отмена",null).setNeutralButton("Изменить поля",(d,w)->showFieldEditor(t)).show();
     }
