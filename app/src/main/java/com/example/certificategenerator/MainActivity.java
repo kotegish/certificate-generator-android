@@ -61,7 +61,8 @@ public class MainActivity extends Activity {
             "＋ Добавить поле","Удалить последнее поле","Какое поле добавить?","Номер сертификата","Сохранить","Отмена",
             "Позиции полей сохранены","По умолчанию: папка приложения Certificates во внутреннем хранилище Android",
             "Выбрана папка телефона. PDF и ZIP будут сохраняться туда.","Папка сохранения выбрана",
-            "настоящим подтверждается, что","успешно принял(а) участие в мероприятии","Дата: ","Организатор","Подпись","Текст благодарности","ТЕКСТ БЛАГОДАРНОСТИ","Настроить расположение полей","СЕРТИФИКАТ","ДИПЛОМ","ПОЧЁТНАЯ ГРАМОТА"
+            "настоящим подтверждается, что","успешно принял(а) участие в мероприятии","Дата: ","Организатор","Подпись","Текст благодарности","ТЕКСТ БЛАГОДАРНОСТИ","Настроить расположение полей","СЕРТИФИКАТ","ДИПЛОМ","ПОЧЁТНАЯ ГРАМОТА",
+            "Настройка расположения полей","Изменить поля","Дата"
         };
         String[] de={
             "Erstellen Sie Dokumente,\\ndie in Erinnerung bleiben","Personalisierte Zertifikate und Diplome – für Ihre gesamte Teilnehmerliste.",
@@ -83,7 +84,8 @@ public class MainActivity extends Activity {
             "＋ Feld hinzufügen","Letztes Feld löschen","Welches Feld hinzufügen?","Zertifikatsnummer","Speichern","Abbrechen",
             "Feldpositionen gespeichert","Standard: App-Ordner Certificates im internen Android-Speicher",
             "Smartphone-Ordner ausgewählt. PDF und ZIP werden dort gespeichert.","Speicherordner ausgewählt",
-            "Hiermit wird bestätigt, dass","erfolgreich an der Veranstaltung teilgenommen hat","Datum: ","Organisation","Unterschrift","Dankestext","DANKES TEXT","Feldpositionen anpassen","ZERTIFIKAT","DIPLOM","EHRENURKUNDE"
+            "Hiermit wird bestätigt, dass","erfolgreich an der Veranstaltung teilgenommen hat","Datum: ","Organisation","Unterschrift","Dankestext","DANKES TEXT","Feldpositionen anpassen","ZERTIFIKAT","DIPLOM","EHRENURKUNDE",
+            "Feldeinstellungen","Felder bearbeiten","Datum"
         };
         String[] en={
             "Create documents\\nthat make an impression","Personalized certificates and diplomas for your entire participant list.",
@@ -105,7 +107,8 @@ public class MainActivity extends Activity {
             "＋ Add field","Remove last field","Which field would you like to add?","Certificate number","Save","Cancel",
             "Field positions saved","Default: Certificates app folder in Android internal storage",
             "Phone folder selected. PDFs and ZIP files will be saved there.","Save folder selected",
-            "This is to certify that","has successfully participated in the event","Date: ","Organizer","Signature","Thank-you message","THANK-YOU MESSAGE","Adjust field positions","CERTIFICATE","DIPLOMA","AWARD CERTIFICATE"
+            "This is to certify that","has successfully participated in the event","Date: ","Organizer","Signature","Thank-you message","THANK-YOU MESSAGE","Adjust field positions","CERTIFICATE","DIPLOMA","AWARD CERTIFICATE",
+            "Field position settings","Edit fields","Date"
         };
         String[] target=language.equals("de")?de:language.equals("en")?en:ru;
         for(int i=0;i<ru.length;i++)if(ru[i].equals(source))return target[i];
@@ -518,8 +521,9 @@ public class MainActivity extends Activity {
                 return;
             }
             Uri apk=Uri.parse(value);
-            Intent install=new Intent(Intent.ACTION_VIEW);
+            Intent install=new Intent(Intent.ACTION_INSTALL_PACKAGE);
             install.setDataAndType(apk,"application/vnd.android.package-archive");
+            install.putExtra(Intent.EXTRA_RETURN_RESULT,true);
             install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(install);
             getPreferences(MODE_PRIVATE).edit().remove("pending_update_uri").apply();
@@ -650,15 +654,15 @@ public class MainActivity extends Activity {
         add.setOnClickListener(v->{
             String[] names={"Имя и фамилия","Название курса","Дата","Организатор / подпись","Текст благодарности","Номер сертификата"};
             String[] keys={"person","title","date","org","gratitude","number"};
-            new AlertDialog.Builder(this).setTitle("Какое поле добавить?").setItems(names,(d,w)->{
+            new AlertDialog.Builder(this).setTitle(tr("Какое поле добавить?")).setItems(new String[]{tr(names[0]),tr(names[1]),tr(names[2]),tr(names[3]),tr(names[4]),tr(names[5])},(d,w)->{
                 t.fields.add(new TemplateField(keys[w],names[w],.5f,.5f,w==0?34:18));canvas.post(render);
             }).show();
         });
         Button remove=button("Удалить последнее поле",Color.rgb(247,238,238));remove.setTextColor(Color.rgb(160,65,65));panel.addView(remove);
         remove.setOnClickListener(v->{if(!t.fields.isEmpty()){t.fields.remove(t.fields.size()-1);canvas.post(render);}});
-        new AlertDialog.Builder(this).setTitle("Настройка расположения полей").setView(panel)
-            .setPositiveButton("Сохранить",(d,w)->{saveCustomTemplate(t);toast("Позиции полей сохранены");})
-            .setNegativeButton("Отмена",null).setNeutralButton("Изменить поля",(d,w)->showFieldEditor(t)).show();
+        new AlertDialog.Builder(this).setTitle(tr("Настройка расположения полей")).setView(panel)
+            .setPositiveButton(tr("Сохранить"),(d,w)->{saveCustomTemplate(t);toast(tr("Позиции полей сохранены"));})
+            .setNegativeButton(tr("Отмена"),null).setNeutralButton(tr("Изменить поля"),(d,w)->showFieldEditor(t)).show();
     }
 
     private Bitmap loadTemplate(Uri uri)throws Exception{
