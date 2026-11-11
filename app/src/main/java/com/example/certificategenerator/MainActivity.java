@@ -181,7 +181,6 @@ public class MainActivity extends Activity {
         updateDownloadId=getPreferences(MODE_PRIVATE).getLong("update_download_id",-1);
         build();
         registerUpdateReceiver();
-        new Handler(Looper.getMainLooper()).postDelayed(this::checkForUpdatesAutomatically, 1500);
     }
 
     private void build(){
@@ -397,13 +396,19 @@ public class MainActivity extends Activity {
     private String currentVersion(){
         try{return getPackageManager().getPackageInfo(getPackageName(),0).versionName;}catch(Exception e){return "неизвестна";}
     }
+    private boolean updateCheckInProgress=false;
     private void checkForUpdatesAutomatically(){
-        long last=getPreferences(MODE_PRIVATE).getLong("last_auto_update_check",0);
-        if(System.currentTimeMillis()-last<60L*60L*1000L)return;
-        getPreferences(MODE_PRIVATE).edit().putLong("last_auto_update_check",System.currentTimeMillis()).apply();
+        long now=System.currentTimeMillis();
+        long lastSuccess=getPreferences(MODE_PRIVATE).getLong("last_auto_update_check",0);
+        long lastAttempt=getPreferences(MODE_PRIVATE).getLong("last_auto_update_attempt",0);
+        if(now-lastSuccess<15L*60L*1000L || now-lastAttempt<5L*60L*1000L)return;
+        if(updateDownloadId!=-1 || getPreferences(MODE_PRIVATE).getString("pending_update_uri",null)!=null)return;
+        getPreferences(MODE_PRIVATE).edit().putLong("last_auto_update_attempt",now).apply();
         checkForUpdates(null);
     }
     private void checkForUpdates(Button button){
+        if(updateCheckInProgress)return;
+        updateCheckInProgress=true;
         if(button!=null){button.setEnabled(false); button.setText(tr("Проверяем…"));}
         new Thread(()->{
             String latest=null,download=null,releasePage=null,error=null;
@@ -431,10 +436,12 @@ public class MainActivity extends Activity {
                     if(name.toLowerCase(Locale.ROOT).endsWith(".apk")){download=asset.optString("browser_download_url","");break;}
                 }
                 if(latest.isEmpty())throw new IOException("У релиза не указана версия.");
+                getPreferences(MODE_PRIVATE).edit().putLong("last_auto_update_check",System.currentTimeMillis()).apply();
             }catch(Exception e){error=e.getMessage()==null?tr("Не удалось проверить обновления"):e.getMessage();}
             finally{if(connection!=null)connection.disconnect();}
             final String v=latest,apk=download,page=releasePage,problem=error;
             new Handler(Looper.getMainLooper()).post(()->{
+                updateCheckInProgress=false;
                 if(button!=null){button.setEnabled(true);button.setText(tr("Проверить обновления"));}
                 if(problem!=null){new AlertDialog.Builder(this).setTitle(tr("Проверка обновлений")).setMessage(problem+"\\n\\nТекущая версия: "+currentVersion()).setPositiveButton("Понятно",null).show();return;}
                 if(apk==null||apk.isEmpty()){
@@ -490,6 +497,7 @@ public class MainActivity extends Activity {
     }
     @Override protected void onResume(){
         super.onResume();
+        new Handler(Looper.getMainLooper()).postDelayed(this::checkForUpdatesAutomatically,1200);
         long pendingId=getPreferences(MODE_PRIVATE).getLong("update_download_id",-1);
         if(pendingId!=-1)processUpdateDownload(pendingId);
         String pending=getPreferences(MODE_PRIVATE).getString("pending_update_uri",null);
