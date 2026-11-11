@@ -399,7 +399,7 @@ public class MainActivity extends Activity {
     }
     private void checkForUpdatesAutomatically(){
         long last=getPreferences(MODE_PRIVATE).getLong("last_auto_update_check",0);
-        if(System.currentTimeMillis()-last<6L*60L*60L*1000L)return;
+        if(System.currentTimeMillis()-last<60L*60L*1000L)return;
         getPreferences(MODE_PRIVATE).edit().putLong("last_auto_update_check",System.currentTimeMillis()).apply();
         checkForUpdates(null);
     }
@@ -441,7 +441,9 @@ public class MainActivity extends Activity {
                     new AlertDialog.Builder(this).setTitle(tr("Новая версия: ")+v).setMessage(tr("Релиз опубликован, но APK-файл к нему не прикреплён. Откройте страницу релиза позже.")).setPositiveButton(tr("Открыть релиз"),(d,w)->openUpdateUrl(page)).setNegativeButton(tr("Закрыть"),null).show();return;
                 }
                 if(normalizeVersion(v).equals(normalizeVersion(currentVersion()))){
-                    if(button!=null)new AlertDialog.Builder(this).setTitle(tr("Обновления не найдены")).setMessage(tr("Установлена последняя версия: ")+currentVersion()).setPositiveButton("Понятно",null).show();
+                    if(button!=null)new AlertDialog.Builder(this).setTitle(tr("Обновления не найдены")).setMessage(tr("Установлена последняя версия: ")+currentVersion()).setPositiveButton(tr("Понятно"),null).show();
+                }else if(button==null){
+                    downloadUpdate(apk);
                 }else{
                     new AlertDialog.Builder(this).setTitle(tr("Доступно обновление")).setMessage(tr("Новая версия: ")+v+"\\n"+tr("Установлена: ")+currentVersion()+"\\n\\n"+tr("Скачать APK?")).setPositiveButton(tr("Скачать"),(d,w)->downloadUpdate(apk)).setNegativeButton(tr("Позже"),null).show();
                 }
