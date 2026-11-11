@@ -38,6 +38,95 @@ public class MainActivity extends Activity {
     private LinearLayout root, previewRow;
     private int ink=Color.rgb(31,43,62), muted=Color.rgb(111,122,139), accent=Color.rgb(72,91,176);
 
+    private String language;
+    private String tr(String source){
+        if(source==null)return null;
+        String[] ru={
+            "Создавайте документы,\\nкоторые запоминаются","Персональные сертификаты и дипломы — сразу для всего списка участников.",
+            "ШАГ 1 · ДИЗАЙН","Выберите оформление","Открыть все шаблоны","Свой дизайн",
+            "Добавьте фоновый макет JPG, PNG или PDF","＋ Добавить",
+            "В галерее — готовые оформления для дипломов, грамот, конкурсов и beauty-обучения.",
+            "ШАГ 2 · ДАННЫЕ","Загрузить список участников · CSV","Файл не выбран",
+            "Название мероприятия или курса","Дата выдачи","Организация / подпись","НАЗВАНИЕ","ДАТА","ОРГАНИЗАТОР",
+            "ШАГ 3 · РЕЗУЛЬТАТ","ПАПКА СОХРАНЕНИЯ","Выбрать папку на телефоне",
+            "Для каждого участника будет создан отдельный PDF. Все файлы также соберём в один ZIP-архив.",
+            "Создать сертификаты  →","Ваши макеты и документы остаются на устройстве.",
+            "Разработано SoloDefStudio","Проверить обновления","Выберите дизайн сертификата","Закрыть",
+            "Выбранный дизайн: ","✓ Выбран","Нажмите для выбора","Королевский рубин","Королевский сапфир",
+            "Императорский герб","Розовый сад","Изумрудный венок","Мраморные колонны","Сапфировая награда",
+            "Чёрный арт-деко","Пудровые цветы","Старинный свиток","Изумрудная корона","Жемчужная классика",
+            "Фиолетовая флора","Золотая классика","Бордовый бархат","Синий медальон",
+            "Сертификаты","Дипломы","Грамоты","Мои шаблоны","Имя и фамилия","Название курса","Организатор / подпись",
+            "Настройка полей шаблона","Перетаскивайте поля пальцем. Их положение будет сохранено и применено ко всем PDF.",
+            "＋ Добавить поле","Удалить последнее поле","Какое поле добавить?","Номер сертификата","Сохранить","Отмена",
+            "Позиции полей сохранены","По умолчанию: папка приложения Certificates во внутреннем хранилище Android",
+            "Выбрана папка телефона. PDF и ZIP будут сохраняться туда.","Папка сохранения выбрана",
+            "настоящим подтверждается, что","успешно принял(а) участие в мероприятии","Дата: ","Организатор","Подпись"
+        };
+        String[] de={
+            "Erstellen Sie Dokumente,\\ndie in Erinnerung bleiben","Personalisierte Zertifikate und Diplome – für Ihre gesamte Teilnehmerliste.",
+            "SCHRITT 1 · DESIGN","Design auswählen","Alle Vorlagen anzeigen","Eigenes Design",
+            "Hintergrund als JPG, PNG oder PDF hinzufügen","＋ Hinzufügen",
+            "Fertige Designs für Diplome, Urkunden, Wettbewerbe und Schulungen.",
+            "SCHRITT 2 · DATEN","Teilnehmerliste laden · CSV","Keine Datei ausgewählt",
+            "Name der Veranstaltung oder des Kurses","Ausstellungsdatum","Organisation / Unterschrift","TITEL","DATUM","ORGANISATOR",
+            "SCHRITT 3 · ERGEBNIS","SPEICHERORDNER","Ordner auf dem Smartphone wählen",
+            "Für jeden Teilnehmer wird eine eigene PDF erstellt. Alle Dateien werden auch als ZIP gespeichert.",
+            "Zertifikate erstellen  →","Ihre Vorlagen und Dokumente bleiben auf Ihrem Gerät.",
+            "Entwickelt von SoloDefStudio","Nach Updates suchen","Zertifikatsdesign auswählen","Schließen",
+            "Ausgewähltes Design: ","✓ Ausgewählt","Zum Auswählen tippen","Königlicher Rubin","Königlicher Saphir",
+            "Kaiserliches Wappen","Rosengarten","Smaragdkranz","Marmorsäulen","Saphir-Auszeichnung",
+            "Schwarzes Art déco","Puderrosa Blumen","Antike Schriftrolle","Smaragdkrone","Perlenklassik",
+            "Violette Blüten","Goldene Klassik","Bordeaux-Samt","Blaues Medaillon",
+            "Zertifikate","Diplome","Urkunden","Eigene Vorlagen","Vor- und Nachname","Kursname","Organisation / Unterschrift",
+            "Vorlagenfelder bearbeiten","Ziehen Sie die Felder mit dem Finger. Die Position wird für alle PDFs gespeichert.",
+            "＋ Feld hinzufügen","Letztes Feld löschen","Welches Feld hinzufügen?","Zertifikatsnummer","Speichern","Abbrechen",
+            "Feldpositionen gespeichert","Standard: App-Ordner Certificates im internen Android-Speicher",
+            "Smartphone-Ordner ausgewählt. PDF und ZIP werden dort gespeichert.","Speicherordner ausgewählt",
+            "Hiermit wird bestätigt, dass","erfolgreich an der Veranstaltung teilgenommen hat","Datum: ","Organisation","Unterschrift"
+        };
+        String[] en={
+            "Create documents\\nthat make an impression","Personalized certificates and diplomas for your entire participant list.",
+            "STEP 1 · DESIGN","Choose a design","Browse all templates","Custom design",
+            "Add a JPG, PNG or PDF background","＋ Add",
+            "Ready-made designs for diplomas, certificates, contests and training.",
+            "STEP 2 · DETAILS","Load participant list · CSV","No file selected",
+            "Event or course name","Issue date","Organization / signature","TITLE","DATE","ORGANIZER",
+            "STEP 3 · OUTPUT","SAVE FOLDER","Choose a folder on your phone",
+            "A separate PDF will be created for each participant. All files will also be packed into a ZIP archive.",
+            "Create certificates  →","Your templates and documents stay on your device.",
+            "Developed by SoloDefStudio","Check for updates","Choose certificate design","Close",
+            "Selected design: ","✓ Selected","Tap to select","Royal Ruby","Royal Sapphire",
+            "Imperial Crest","Rose Garden","Emerald Laurel","Marble Columns","Sapphire Award",
+            "Black Art Deco","Powder Flowers","Vintage Scroll","Emerald Crown","Ivory Pearl",
+            "Violet Flourish","Classic Gold","Burgundy Velvet","Navy Medallion",
+            "Certificates","Diplomas","Awards","My templates","Full name","Course title","Organization / signature",
+            "Edit template fields","Drag fields with your finger. Their positions will be saved and used in every PDF.",
+            "＋ Add field","Remove last field","Which field would you like to add?","Certificate number","Save","Cancel",
+            "Field positions saved","Default: Certificates app folder in Android internal storage",
+            "Phone folder selected. PDFs and ZIP files will be saved there.","Save folder selected",
+            "This is to certify that","has successfully participated in the event","Date: ","Organizer","Signature"
+        };
+        String[] target=language.equals("de")?de:language.equals("en")?en:ru;
+        for(int i=0;i<ru.length;i++)if(ru[i].equals(source))return target[i];
+        return source;
+    }
+    private void chooseLanguage(){
+        String[] labels={"Русский","Deutsch","English"};
+        String[] codes={"ru","de","en"};
+        int checked=language.equals("de")?1:language.equals("en")?2:0;
+        new AlertDialog.Builder(this).setTitle("Language / Язык").setSingleChoiceItems(labels,checked,(d,w)->{
+            String oldEvent=event==null?"":event.getText().toString();
+            String oldDate=date==null?"":date.getText().toString();
+            String oldIssuer=issuer==null?"":issuer.getText().toString();
+            language=codes[w];
+            getPreferences(MODE_PRIVATE).edit().putString("app_language",language).apply();
+            d.dismiss();build();
+            event.setText(oldEvent);date.setText(oldDate);issuer.setText(oldIssuer);
+        }).setNegativeButton("Отмена",null).show();
+    }
+
+
     static class TemplateField {
         String key,label; float x,y,size;
         TemplateField(String k,String l,float px,float py,float sz){key=k;label=l;x=px;y=py;size=sz;}
@@ -52,6 +141,7 @@ public class MainActivity extends Activity {
 
     @Override public void onCreate(Bundle b){
         super.onCreate(b);
+        language=getPreferences(MODE_PRIVATE).getString("app_language", Locale.getDefault().getLanguage().equals("de")?"de":Locale.getDefault().getLanguage().equals("en")?"en":"ru");
         getWindow().setStatusBarColor(Color.rgb(246,247,251));
         getWindow().setNavigationBarColor(Color.rgb(246,247,251));
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
@@ -89,6 +179,7 @@ public class MainActivity extends Activity {
 
         TextView brand=txt("SOLODEFSTUDIO",12,accent,true); brand.setLetterSpacing(.18f); root.addView(brand);
         TextView brandSub=txt("CERTIFICATE GENERATOR",9,muted,true); brandSub.setLetterSpacing(.14f); brandSub.setPadding(0,dp(3),0,0); root.addView(brandSub);
+        Button languageBtn=button("🌐 "+(language.equals("de")?"Deutsch":language.equals("en")?"English":"Русский")+"  ▾",Color.rgb(235,238,250)); languageBtn.setTextColor(accent); root.addView(languageBtn,params(-1,dp(42),12)); languageBtn.setOnClickListener(v->chooseLanguage());
         TextView title=txt("Создавайте документы,\nкоторые запоминаются",27,ink,true); title.setPadding(0,dp(12),0,dp(5)); root.addView(title);
         TextView intro=txt("Персональные сертификаты и дипломы — сразу для всего списка участников.",14,muted,false); root.addView(intro);
 
@@ -174,17 +265,17 @@ public class MainActivity extends Activity {
         p.setTypeface(Typeface.create("serif",Typeface.BOLD));p.setTextSize(17*k);
         c.drawText(t.category.equals("Дипломы")?"ДИПЛОМ":t.category.equals("Грамоты")?"ПОЧЁТНАЯ ГРАМОТА":"СЕРТИФИКАТ",421*k,132*k,p);
         p.setColor(Color.rgb(48,43,37));p.setTypeface(Typeface.create("serif",Typeface.NORMAL));p.setTextSize(19*k);
-        c.drawText("настоящим подтверждается, что",421*k,205*k,p);
+        c.drawText(tr("настоящим подтверждается, что"),421*k,205*k,p);
         p.setTypeface(Typeface.create("serif",Typeface.BOLD));p.setTextSize(30*k);
         drawFit(c,person,421*k,285*k,690*k,p,30*k,18*k);
         p.setTypeface(Typeface.create("sans-serif",Typeface.NORMAL));p.setTextSize(16*k);
-        c.drawText("успешно принял(а) участие в мероприятии",421*k,350*k,p);
+        c.drawText(tr("успешно принял(а) участие в мероприятии"),421*k,350*k,p);
         p.setTypeface(Typeface.create("serif",Typeface.BOLD));p.setTextSize(22*k);p.setColor(Color.rgb(112,79,34));
         drawFit(c,title,421*k,405*k,690*k,p,22*k,15*k);
         p.setTypeface(Typeface.create("sans-serif",Typeface.NORMAL));p.setTextSize(13*k);p.setColor(Color.rgb(75,69,60));
-        c.drawText("Дата: "+d,250*k,480*k,p);c.drawText("№ "+String.format(Locale.US,"%05d",num),590*k,480*k,p);
+        c.drawText(tr("Дата: ")+d,250*k,480*k,p);c.drawText("№ "+String.format(Locale.US,"%05d",num),590*k,480*k,p);
         p.setStrokeWidth(1*k);c.drawLine(90*k,515*k,300*k,515*k,p);c.drawLine(540*k,515*k,750*k,515*k,p);p.setTextSize(11*k);
-        c.drawText(org.isEmpty()?"Организатор":org,195*k,535*k,p);c.drawText("Подпись",645*k,535*k,p);
+        c.drawText(org.isEmpty()?tr("Организатор"):org,195*k,535*k,p);c.drawText(tr("Подпись"),645*k,535*k,p);
     }
     private void showTemplates(){
         ScrollView scroll=new ScrollView(this); LinearLayout list=new LinearLayout(this); list.setOrientation(1); list.setPadding(dp(10),dp(8),dp(10),dp(8)); scroll.addView(list);
@@ -197,13 +288,13 @@ public class MainActivity extends Activity {
                 LinearLayout.LayoutParams ip=new LinearLayout.LayoutParams(0,-2,1); ip.setMargins(dp(4),0,dp(4),0); row.addView(item,ip);
                 FrameLayout preview=new FrameLayout(this); preview.setBackground(drawable(t.color,8,Color.TRANSPARENT,0)); item.addView(preview,new LinearLayout.LayoutParams(-1,dp(105)));
                 drawPreviewArtwork(preview,t);
-                TextView name=txt(t.name,13,Color.rgb(246,229,190),true); name.setPadding(0,dp(8),0,dp(2)); item.addView(name);
-                TextView category=txt(t.category,10,Color.rgb(190,174,143),false); item.addView(category);
-                TextView state=txt(t==selected?"✓ Выбран":"Нажмите для выбора",10,t==selected?Color.rgb(232,190,93):Color.rgb(176,163,140),true); state.setPadding(0,dp(5),0,0); item.addView(state);
+                TextView name=txt(tr(t.name),13,Color.rgb(246,229,190),true); name.setPadding(0,dp(8),0,dp(2)); item.addView(name);
+                TextView category=txt(tr(t.category),10,Color.rgb(190,174,143),false); item.addView(category);
+                TextView state=txt(tr(t==selected?"✓ Выбран":"Нажмите для выбора"),10,t==selected?Color.rgb(232,190,93):Color.rgb(176,163,140),true); state.setPadding(0,dp(5),0,0); item.addView(state);
                 item.setOnClickListener(v->{selected=t;updateSelected();});
             }
         }
-        AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Выберите дизайн сертификата").setView(scroll).setNegativeButton("Закрыть",null).create();
+        AlertDialog dialog=new AlertDialog.Builder(this).setTitle(tr("Выберите дизайн сертификата")).setView(scroll).setNegativeButton(tr("Закрыть"),null).create();
         dialog.show();
         for(int i=0;i<list.getChildCount();i++){
             LinearLayout row=(LinearLayout)list.getChildAt(i);
@@ -221,7 +312,7 @@ public class MainActivity extends Activity {
         for(int n=0;n<3;n++)addPreview(previewRow,templates.get((index+n)%templates.size()));
     }
     private void updateSelected(){
-        if(selectedLabel!=null)selectedLabel.setText("✓ Выбранный дизайн: "+selected.name+"  ·  "+selected.category);
+        if(selectedLabel!=null)selectedLabel.setText(tr("Выбранный дизайн: ")+tr(selected.name)+"  ·  "+tr(selected.category));
         refreshPreviewRow();
     }
     private void pickTemplate(){
@@ -559,11 +650,11 @@ public class MainActivity extends Activity {
     private void drawFit(Canvas c,String s,float x,float y,float width,Paint p,float size,float min){p.setTextSize(size);while(p.measureText(s)>width&&size>min){size--;p.setTextSize(size);}c.drawText(s,x,y,p);}
     private String safe(String s){return s.replaceAll("[\\\\/:*?\"<>|]","_").trim().replaceAll("\\s+","_");}
     private LinearLayout card(){LinearLayout l=new LinearLayout(this);l.setBackground(drawable(Color.WHITE,18,Color.rgb(232,235,241),1));return l;}
-    private TextView txt(String s,int size,int color,boolean bold){TextView t=new TextView(this);t.setText(s);t.setTextSize(size);t.setTextColor(color);if(bold)t.setTypeface(null,1);return t;}
+    private TextView txt(String s,int size,int color,boolean bold){TextView t=new TextView(this);t.setText(tr(s));t.setTextSize(size);t.setTextColor(color);if(bold)t.setTypeface(null,1);return t;}
     private TextView section(String s){TextView t=txt(s,11,accent,true);t.setLetterSpacing(.12f);return t;}
-    private EditText field(String hint){EditText e=new EditText(this);e.setSingleLine(true);e.setTextSize(14);e.setHint(hint);e.setPadding(dp(12),0,dp(12),0);e.setBackground(drawable(Color.rgb(247,248,251),10,Color.rgb(232,235,241),1));return e;}
+    private EditText field(String hint){EditText e=new EditText(this);e.setSingleLine(true);e.setTextSize(14);e.setHint(tr(hint));e.setPadding(dp(12),0,dp(12),0);e.setBackground(drawable(Color.rgb(247,248,251),10,Color.rgb(232,235,241),1));return e;}
     private void addInput(LinearLayout box,String label,EditText e){TextView l=txt(label,10,muted,true);l.setPadding(0,dp(8),0,dp(5));box.addView(l);box.addView(e,params(-1,dp(48),0));}
-    private Button button(String s,int color){Button b=new Button(this);b.setText(s);b.setTextSize(13);b.setAllCaps(false);b.setTypeface(null,1);b.setBackground(drawable(color,12,Color.TRANSPARENT,0));return b;}
+    private Button button(String s,int color){Button b=new Button(this);b.setText(tr(s));b.setTextSize(13);b.setAllCaps(false);b.setTypeface(null,1);b.setBackground(drawable(color,12,Color.TRANSPARENT,0));return b;}
     private GradientDrawable drawable(int color,int radius,int stroke,int sw){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(radius));if(sw>0)d.setStroke(dp(sw),stroke);return d;}
     private LinearLayout.LayoutParams params(int w,int h,int top){LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(w,h);if(top>0)p.topMargin=dp(top);return p;}
     private int dp(float v){return (int)(v*getResources().getDisplayMetrics().density+.5f);}
