@@ -85,7 +85,7 @@ public class MainActivity extends Activity {
             "Feldpositionen gespeichert","Standard: App-Ordner Certificates im internen Android-Speicher",
             "Smartphone-Ordner ausgewählt. PDF und ZIP werden dort gespeichert.","Speicherordner ausgewählt",
             "Hiermit wird bestätigt, dass","erfolgreich an der Veranstaltung teilgenommen hat","Datum: ","Organisation","Unterschrift","Dankestext","DANKES TEXT","Feldpositionen anpassen","ZERTIFIKAT","DIPLOM","EHRENURKUNDE",
-            "Feldeinstellungen","Felder bearbeiten","Datum"
+            "Feldeinstellungen","Felder bearbeiten","Datum","Wird geprüft…","Update-Prüfung","Verstanden","Keine Updates gefunden","Neueste Version installiert: ","Update verfügbar","Neue Version: ","Installiert: ","APK herunterladen?","Herunterladen","Später","Die Veröffentlichung enthält noch keine APK-Datei. Öffnen Sie später die Release-Seite.","Release öffnen","Noch keine Releases veröffentlicht.","Updates konnten nicht geprüft werden","Die heruntergeladene APK-Datei konnte nicht gefunden werden","Update-Download fehlgeschlagen. Code: ","Fehler beim Herunterladen des Updates: ","SoloDefStudio-Update","Neue App-Version wird heruntergeladen","Проверяем…","Проверка обновлений","Понятно","Обновления не найдены","Установлена последняя версия: ","Доступно обновление","Новая версия: ","Установлена: ","Скачать APK?","Скачать","Позже","Релиз опубликован, но APK-файл к нему не прикреплён. Откройте страницу релиза позже.","Открыть релиз","Пока нет опубликованных релизов.","Не удалось проверить обновления","Не удалось получить загруженный APK","Загрузка обновления не удалась. Код: ","Ошибка загрузки обновления: ","Обновление SoloDefStudio","Загрузка новой версии приложения"
         };
         String[] en={
             "Create documents\\nthat make an impression","Personalized certificates and diplomas for your entire participant list.",
@@ -108,7 +108,7 @@ public class MainActivity extends Activity {
             "Field positions saved","Default: Certificates app folder in Android internal storage",
             "Phone folder selected. PDFs and ZIP files will be saved there.","Save folder selected",
             "This is to certify that","has successfully participated in the event","Date: ","Organizer","Signature","Thank-you message","THANK-YOU MESSAGE","Adjust field positions","CERTIFICATE","DIPLOMA","AWARD CERTIFICATE",
-            "Field position settings","Edit fields","Date"
+            "Field position settings","Edit fields","Date","Checking…","Update check","OK","No updates found","Latest version installed: ","Update available","New version: ","Installed: ","Download APK?","Download","Later","The release does not have an APK file attached yet. Open the release page later.","Open release","No releases have been published yet.","Could not check for updates","Could not retrieve the downloaded APK","Update download failed. Code: ","Update download error: ","SoloDefStudio update","Downloading the new app version"
         };
         String[] target=language.equals("de")?de:language.equals("en")?en:ru;
         for(int i=0;i<ru.length;i++)if(ru[i].equals(source))return target[i];
@@ -383,7 +383,7 @@ public class MainActivity extends Activity {
         try{
             if(saveTree!=null){
                 saveCertificatesToTree(title,d,org,thanks);
-                new AlertDialog.Builder(this).setTitle("Готово!").setMessage("Создано документов: "+people.size()+"\\n\\nPDF и ZIP сохранены в выбранную папку, в новой папке с датой и временем.").setPositiveButton("Понятно",null).show();
+                new AlertDialog.Builder(this).setTitle("Готово!").setMessage("Создано документов: "+people.size()+"\\n\\nPDF и ZIP сохранены в выбранную папку, в новой папке с датой и временем.").setPositiveButton(tr("Понятно"),null).show();
             }else{
                 File dir=new File(getExternalFilesDir(null),"Certificates");if(!dir.exists())dir.mkdirs();File zip=new File(dir,"certificates_"+System.currentTimeMillis()+".zip");
                 try(ZipOutputStream zos=new ZipOutputStream(new FileOutputStream(zip))){
@@ -404,7 +404,7 @@ public class MainActivity extends Activity {
         checkForUpdates(null);
     }
     private void checkForUpdates(Button button){
-        if(button!=null){button.setEnabled(false); button.setText("Проверяем...");}
+        if(button!=null){button.setEnabled(false); button.setText(tr("Проверяем…"));}
         new Thread(()->{
             String latest=null,download=null,releasePage=null,error=null;
             HttpURLConnection connection=null;
@@ -415,7 +415,7 @@ public class MainActivity extends Activity {
                 connection.setRequestProperty("Accept","application/vnd.github+json");
                 connection.setRequestProperty("User-Agent","CertificateGenerator-Android");
                 int code=connection.getResponseCode();
-                if(code==404)throw new IOException("Пока нет опубликованных релизов.");
+                if(code==404)throw new IOException(tr("Пока нет опубликованных релизов."));
                 if(code!=200)throw new IOException("Сервер вернул ошибку "+code);
                 StringBuilder body=new StringBuilder();
                 try(BufferedReader reader=new BufferedReader(new InputStreamReader(connection.getInputStream(),StandardCharsets.UTF_8))){
@@ -431,19 +431,19 @@ public class MainActivity extends Activity {
                     if(name.toLowerCase(Locale.ROOT).endsWith(".apk")){download=asset.optString("browser_download_url","");break;}
                 }
                 if(latest.isEmpty())throw new IOException("У релиза не указана версия.");
-            }catch(Exception e){error=e.getMessage()==null?"Не удалось проверить обновления":e.getMessage();}
+            }catch(Exception e){error=e.getMessage()==null?tr("Не удалось проверить обновления"):e.getMessage();}
             finally{if(connection!=null)connection.disconnect();}
             final String v=latest,apk=download,page=releasePage,problem=error;
             new Handler(Looper.getMainLooper()).post(()->{
-                if(button!=null){button.setEnabled(true);button.setText("Проверить обновления");}
-                if(problem!=null){new AlertDialog.Builder(this).setTitle("Проверка обновлений").setMessage(problem+"\\n\\nТекущая версия: "+currentVersion()).setPositiveButton("Понятно",null).show();return;}
+                if(button!=null){button.setEnabled(true);button.setText(tr("Проверить обновления"));}
+                if(problem!=null){new AlertDialog.Builder(this).setTitle(tr("Проверка обновлений")).setMessage(problem+"\\n\\nТекущая версия: "+currentVersion()).setPositiveButton("Понятно",null).show();return;}
                 if(apk==null||apk.isEmpty()){
-                    new AlertDialog.Builder(this).setTitle("Новая версия: "+v).setMessage("Релиз опубликован, но APK-файл к нему не прикреплён. Откройте страницу релиза позже.").setPositiveButton("Открыть релиз",(d,w)->openUpdateUrl(page)).setNegativeButton("Закрыть",null).show();return;
+                    new AlertDialog.Builder(this).setTitle(tr("Новая версия: ")+v).setMessage(tr("Релиз опубликован, но APK-файл к нему не прикреплён. Откройте страницу релиза позже.")).setPositiveButton(tr("Открыть релиз"),(d,w)->openUpdateUrl(page)).setNegativeButton(tr("Закрыть"),null).show();return;
                 }
                 if(normalizeVersion(v).equals(normalizeVersion(currentVersion()))){
-                    if(button!=null)new AlertDialog.Builder(this).setTitle("Обновления не найдены").setMessage("Установлена последняя версия: "+currentVersion()).setPositiveButton("Понятно",null).show();
+                    if(button!=null)new AlertDialog.Builder(this).setTitle(tr("Обновления не найдены")).setMessage(tr("Установлена последняя версия: ")+currentVersion()).setPositiveButton("Понятно",null).show();
                 }else{
-                    new AlertDialog.Builder(this).setTitle("Доступно обновление").setMessage("Новая версия: "+v+"\\nУстановлена: "+currentVersion()+"\\n\\nСкачать APK?").setPositiveButton("Скачать",(d,w)->downloadUpdate(apk)).setNegativeButton("Позже",null).show();
+                    new AlertDialog.Builder(this).setTitle(tr("Доступно обновление")).setMessage(tr("Новая версия: ")+v+"\\n"+tr("Установлена: ")+currentVersion()+"\\n\\n"+tr("Скачать APK?")).setPositiveButton(tr("Скачать"),(d,w)->downloadUpdate(apk)).setNegativeButton(tr("Позже"),null).show();
                 }
             });
         }).start();
@@ -473,14 +473,14 @@ public class MainActivity extends Activity {
                     getPreferences(MODE_PRIVATE).edit().putString("pending_update_uri",apk.toString()).remove("update_download_id").apply();
                     updateDownloadId=-1;
                     installPendingUpdate();
-                }else toast("Не удалось получить загруженный APK");
+                }else toast(tr("Не удалось получить загруженный APK"));
             }else if(status==DownloadManager.STATUS_FAILED){
                 int reason=cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON));
                 getPreferences(MODE_PRIVATE).edit().remove("update_download_id").apply();
                 updateDownloadId=-1;
-                toast("Загрузка обновления не удалась. Код: "+reason);
+                toast(tr("Загрузка обновления не удалась. Код: ")+reason);
             }
-        }catch(Exception e){toast("Ошибка загрузки обновления: "+e.getMessage());}
+        }catch(Exception e){toast(tr("Ошибка загрузки обновления: ")+e.getMessage());}
     }
     @Override protected void onDestroy(){
         if(updateReceiver!=null)try{unregisterReceiver(updateReceiver);}catch(Exception ignored){}
@@ -497,8 +497,8 @@ public class MainActivity extends Activity {
         try{
             DownloadManager manager=(DownloadManager)getSystemService(DOWNLOAD_SERVICE);
             DownloadManager.Request request=new DownloadManager.Request(Uri.parse(url));
-            request.setTitle("Обновление SoloDefStudio");
-            request.setDescription("Загрузка новой версии приложения");
+            request.setTitle(tr("Обновление SoloDefStudio"));
+            request.setDescription(tr("Загрузка новой версии приложения"));
             request.setMimeType("application/vnd.android.package-archive");
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
             request.setDestinationInExternalFilesDir(this,android.os.Environment.DIRECTORY_DOWNLOADS,"SoloDefStudio-update.apk");
