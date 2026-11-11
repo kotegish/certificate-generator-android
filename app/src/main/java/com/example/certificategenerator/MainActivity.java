@@ -61,7 +61,7 @@ public class MainActivity extends Activity {
             "＋ Добавить поле","Удалить последнее поле","Какое поле добавить?","Номер сертификата","Сохранить","Отмена",
             "Позиции полей сохранены","По умолчанию: папка приложения Certificates во внутреннем хранилище Android",
             "Выбрана папка телефона. PDF и ZIP будут сохраняться туда.","Папка сохранения выбрана",
-            "настоящим подтверждается, что","успешно принял(а) участие в мероприятии","Дата: ","Организатор","Подпись"
+            "настоящим подтверждается, что","успешно принял(а) участие в мероприятии","Дата: ","Организатор","Подпись","Текст благодарности","ТЕКСТ БЛАГОДАРНОСТИ","Настроить расположение полей","СЕРТИФИКАТ","ДИПЛОМ","ПОЧЁТНАЯ ГРАМОТА"
         };
         String[] de={
             "Erstellen Sie Dokumente,\\ndie in Erinnerung bleiben","Personalisierte Zertifikate und Diplome – für Ihre gesamte Teilnehmerliste.",
@@ -83,7 +83,7 @@ public class MainActivity extends Activity {
             "＋ Feld hinzufügen","Letztes Feld löschen","Welches Feld hinzufügen?","Zertifikatsnummer","Speichern","Abbrechen",
             "Feldpositionen gespeichert","Standard: App-Ordner Certificates im internen Android-Speicher",
             "Smartphone-Ordner ausgewählt. PDF und ZIP werden dort gespeichert.","Speicherordner ausgewählt",
-            "Hiermit wird bestätigt, dass","erfolgreich an der Veranstaltung teilgenommen hat","Datum: ","Organisation","Unterschrift"
+            "Hiermit wird bestätigt, dass","erfolgreich an der Veranstaltung teilgenommen hat","Datum: ","Organisation","Unterschrift","Dankestext","DANKES TEXT","Feldpositionen anpassen","ZERTIFIKAT","DIPLOM","EHRENURKUNDE"
         };
         String[] en={
             "Create documents\\nthat make an impression","Personalized certificates and diplomas for your entire participant list.",
@@ -105,7 +105,7 @@ public class MainActivity extends Activity {
             "＋ Add field","Remove last field","Which field would you like to add?","Certificate number","Save","Cancel",
             "Field positions saved","Default: Certificates app folder in Android internal storage",
             "Phone folder selected. PDFs and ZIP files will be saved there.","Save folder selected",
-            "This is to certify that","has successfully participated in the event","Date: ","Organizer","Signature"
+            "This is to certify that","has successfully participated in the event","Date: ","Organizer","Signature","Thank-you message","THANK-YOU MESSAGE","Adjust field positions","CERTIFICATE","DIPLOMA","AWARD CERTIFICATE"
         };
         String[] target=language.equals("de")?de:language.equals("en")?en:ru;
         for(int i=0;i<ru.length;i++)if(ru[i].equals(source))return target[i];
@@ -582,7 +582,7 @@ public class MainActivity extends Activity {
     private void drawCustomFields(Canvas c,Paint p,Template t,String person,String title,String d,String org,String thanks,int num,float pageW,float pageH){
         float fontScale=pageH/595f;
         p.setTextAlign(Paint.Align.CENTER);p.setColor(Color.rgb(112,79,34));p.setTypeface(Typeface.create("serif",Typeface.BOLD));p.setTextSize(17*fontScale);
-        c.drawText(t.category.equals("Дипломы")?"DIPLOMA":t.category.equals("Грамоты")?"AWARD":"CERTIFICATE",pageW*.5f,pageH*.22f,p);
+        c.drawText(t.category.equals("Дипломы")?tr("ДИПЛОМ"):t.category.equals("Грамоты")?tr("ПОЧЁТНАЯ ГРАМОТА"):tr("СЕРТИФИКАТ"),pageW*.5f,pageH*.22f,p);
         for(TemplateField f:t.fields){
             String value=fieldValue(f,person,title,d,org,thanks,num);
             p.setColor(Color.rgb(35,42,52));p.setTextAlign(Paint.Align.CENTER);
